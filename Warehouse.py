@@ -16,6 +16,7 @@ sabtvorod = Toplevel()
 reqkalapage = Toplevel()
 sefareshkala = Toplevel()  
 sabtKhoroj = Toplevel()
+history = Toplevel()
 style = ttk.Style()
     
 #---------PagesBGs-Images---------------
@@ -29,6 +30,7 @@ img27 = PhotoImage(file = 'pics/sabtVorodPage.png')
 img29 = PhotoImage(file = 'pics/reqPage.png')
 img31 = PhotoImage(file = 'pics/SefareshKalaPg.png')
 img33 = PhotoImage(file = 'pics/ExportKalaPg.png')
+img36 = PhotoImage(file ='pics/HistoryPg.png')
 #---------Main-PageBtns-Images----------
 img4 = PhotoImage(file = 'pics/fish.png')
 img5 = PhotoImage(file = 'pics/darkhast.png')
@@ -36,6 +38,7 @@ img6 = PhotoImage(file = 'pics/mojodi.png')
 img7 = PhotoImage(file = 'pics/resid.png')
 img8 = PhotoImage(file = 'pics/sabtKala.png')
 img9 = PhotoImage(file = 'pics/sabtKarbar.png')
+img35 = PhotoImage(file = 'pics/SabtKhorojBtn.png')
 #---------login-PageBtns-Images----------
 img10 = PhotoImage(file = 'pics/login-btn.png')
 img15 = PhotoImage(file = 'pics/cheshm-baste.png')
@@ -76,6 +79,7 @@ class app:
         self.AddEmployeePage()
         self.mojodi_page()
         self.exportProductPage()
+        self.historyPage()
         self.lst = []
         self.lst_emp = []
         self.lst_mojodi = []
@@ -85,6 +89,8 @@ class app:
         self.lst_export = []
         self.count = 1
         self.count1 = 0
+        self.count2 = 0
+        self.count3 = 1
         self.data_to_list()
         self.data_to_list_emp()
         self.data_to_stock()
@@ -97,11 +103,14 @@ class app:
         # self.purchase_select()
     def MainPage(self, event = None) :
         root.geometry('1200x720+150+20')
-        root.state('normal')
+        root.state('withdraw')
         self.main_lbl = Label(root, width = 1184 , height = 709 , bg = 'white' , image = img2 )
 
         self.fishBtn = Button(root, width = 157 , height  = 62 , image = img4 , activebackground= '#EEEEEE', borderwidth = 0 , command = self.darKhastKhoroj)
         self.fishBtn.place(x = 90 , y = 139)
+
+        self.sabtKhorojBtn = Button(root, width = 157 , height  = 62 , image = img35 , activebackground= '#EEEEEE', borderwidth = 0 , command = self.exportProductPopUp)
+        self.sabtKhorojBtn.place(x = 90 , y = 200)
 
         self.fishBtn.bind('<Enter>',lambda event : self.hoverBtn(img4,'pics/fish-hover.png'))
         self.fishBtn.bind('<Leave>',lambda event : self.hoverBtn(img4,'pics/fish.png'))
@@ -592,7 +601,7 @@ class app:
 
     def sabtVorodPage(self):
         sabtvorod.geometry('1200x720+150+20')
-        sabtvorod.state('withdraw')
+        sabtvorod.state('normal')
         self.sabtvorod_main_lbl = Label(sabtvorod , bg = 'white' , width = 1200, height = 720 )
         self.sabtvorod_main_lbl.place( x = 0 , y = 0)
         self.sabtvorod_lbl = Label(sabtvorod , bg = 'white' , width = 1150 , height = 676 , image = img27)
@@ -630,6 +639,10 @@ class app:
         self.e_Get_num.place( x = 369, y = 322)
         self.e_Get_num.focus()
 
+        self.e_Get_codeSefaresh = Entry(sabtvorod, width = 19 , font = ('B Nazanin' , 10 , 'bold'), bg = 'white', border = 0 , justify ='right')
+        self.e_Get_codeSefaresh.place( x = 369, y = 358)
+
+
         self.show_img_Vorodi = Label(sabtvorod , image = img17 , relief="flat",width = 100 , height= 95, bg = 'black')
         self.show_img_Vorodi.place(x = 177, y = 199 )
 #----------------------------------------------------------------
@@ -656,9 +669,9 @@ class app:
         self.mainPage_btn.bind('<Leave>',lambda event : self.hoverBtn(img14,'pics/main-btn.png'))
 
         self.show_tree_Vorodi = ttk.Treeview(sabtvorod ,  style="Mystyle.Treeview", height = 8)
-        self.show_tree_Vorodi.place(x = 135 , y = 399)
+        self.show_tree_Vorodi.place(x = 115 , y = 399)
 
-        self.show_tree_Vorodi['columns'] = ('noqte','number','category','id','Type','Name','row')
+        self.show_tree_Vorodi['columns'] = ('noqte','number','category','id','Type','Name','orderCode','row')
 
         self.show_tree_Vorodi.column('#0', width = 0  ,stretch = NO)
         self.show_tree_Vorodi.column('row', width = 60 , anchor = CENTER , minwidth = 60 )
@@ -667,7 +680,8 @@ class app:
         self.show_tree_Vorodi.column('category' ,width = 150 , anchor = CENTER , minwidth = 150 )
         self.show_tree_Vorodi.column('noqte' ,width = 156 , anchor = CENTER, minwidth = 156 )
         self.show_tree_Vorodi.column('Type' ,width = 150 , anchor = CENTER, minwidth = 150  )
-        self.show_tree_Vorodi.column('number' ,width = 150 , anchor = CENTER, minwidth = 150  )
+        self.show_tree_Vorodi.column('number' ,width = 100 , anchor = CENTER, minwidth = 100  )
+        self.show_tree_Vorodi.column('orderCode' ,width = 110 , anchor = CENTER, minwidth = 110  )
 
         self.show_tree_Vorodi.heading('#0', text = ' ' , anchor = CENTER)
         self.show_tree_Vorodi.heading('row', text = 'ردیف' , anchor = CENTER )
@@ -677,6 +691,7 @@ class app:
         self.show_tree_Vorodi.heading('noqte', text = 'نقطه خرید' , anchor = CENTER)
         self.show_tree_Vorodi.heading('Type'   , text = ' نوع کالا' , anchor = CENTER )
         self.show_tree_Vorodi.heading('number' , text = 'تعداد', anchor = CENTER  )
+        self.show_tree_Vorodi.heading('orderCode' , text = 'کد سفارش', anchor = CENTER  )
         style.theme_use("clam")
         style.configure("Mystyle.Treeview.Heading",
                         background = '#A0A0A0',
@@ -800,7 +815,7 @@ class app:
         self.e_search_codeKala.insert(0,data[0][2])
 
     def SefareshKalaPage(self):
-        sefareshkala.state('withdraw')
+        sefareshkala.state('normal')
         sefareshkala.geometry('1200x720+150+20')
         sefareshkala.configure(bg = 'white')
         self.sefareshkala_lbl = Label(sefareshkala , bg = 'white' , width = 1150 , height = 676 , image = img31)
@@ -968,6 +983,7 @@ class app:
         self.noeKalalbl_sefaresh['text']= data[0][1]
         self.noqtelbl_sefaresh['text'] = data[0][5]
         self.mojodilbl_sefaresh['text'] = data[0][7]
+        self.CodeSefareshGet = data[0][8]
     def AddSefaresh_to_sql(self):
         self.con=sql.connect('mydb.db')
         self.cur=self.con.cursor()
@@ -982,8 +998,8 @@ class app:
                                                                     lastName TEXT,
                                                                     gender TEXT,
                                                                     status TEXT,
-                                                                    date TEXT
-                                                                    )'''
+                                                                    date TEXT, 
+                                                                    CodeSefaresh TEXT)'''
         self.cur.execute(self.command)
         self.status = 'درحال بررسی'
         self.data = (self.namKalalbl_sefaresh['text'],
@@ -997,9 +1013,10 @@ class app:
                     self.lastlbl_sefaresh['text'],
                     self.genderlbl_sefaresh['text'],
                     self.status,
-                    self.e_GetDate_sefaresh.get())
+                    self.e_GetDate_sefaresh.get(),
+                    self.CodeSefareshGet)
         
-        self.cur.execute('''INSERT INTO DarKhastKharid (namKala,type,code,goro,noqte,number,namKarbar,codeMeli,lastName,gender,status,date) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)''',self.data)
+        self.cur.execute('''INSERT INTO DarKhastKharid (namKala,type,code,goro,noqte,number,namKarbar,codeMeli,lastName,gender,status,date,CodeSefaresh) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)''',self.data)
         self.con.commit()
         self.numlist_product_sefaresh=len(self.show_tree_sefaresh.get_children())
         self.show_tree_sefaresh.insert(parent = '',
@@ -1050,11 +1067,12 @@ class app:
 
 
     def exportProductPage(self):
-        sabtKhoroj.state('withdraw')
+        sabtKhoroj.state('normal')
         sabtKhoroj.geometry('1200x720+150+20')
         sabtKhoroj.configure(bg = 'white')
         self.exportkala_lbl = Label(sabtKhoroj , bg = 'white' , width = 1150 , height = 676 , image = img33)
         self.exportkala_lbl.place(x = 25 , y = 25)
+
 
         self.show_tree_export = ttk.Treeview(sabtKhoroj ,  style="Mystyle.Treeview", height = 19)
         self.show_tree_export.place(x = 145 , y = 100)
@@ -1143,11 +1161,100 @@ class app:
         print(self.mojodiKalaAsli)
         mojodiKala = self.cur.execute('''UPDATE Kala SET mojodi = '{}' WHERE code = '{}' '''.format(self.mojodiKalaAsli,self.values[3])) 
         delete_one = self.show_tree_export.selection()[0]
+        self.status_changed = 'خارج شده'
         self.show_tree_export.delete(delete_one)
-        self.cur.execute('''DELETE FROM DarKhastKharid WHERE code = '{}' '''.format(self.values[3]))
+        self.cur.execute('''UPDATE DarKhastKharid SET status = '{}' WHERE code = '{}' '''.format(self.status_changed,self.values[3]))
         self.con.commit()
 
         # tedadDarkhast1 = int(tedadDarkhast)
+#------------------------historyPage-------------------------------------
+    def historyPage(self):
+        history.state('normal')
+        history.geometry('1200x720+150+20')
+        history.configure(bg = 'white')
+        self.history_lbl = Label(history , bg = 'white' , width = 1150 , height = 676 , image = img36)
+        self.history_lbl.place(x = 25 , y = 25)
+
+        
+        self.show_tree_history = ttk.Treeview(history ,  style="MystyleHistory.Treeview", height = 19)
+        self.show_tree_history.place(x = 39, y = 100)
+
+        self.show_tree_history['columns'] = ('date','status','noqte','number','codeMeli','lastName','nameKarbar','category','Type','Name','id','codeSefaresh','row')
+
+        self.show_tree_history.column('#0', width = 0  ,stretch = NO)
+        self.show_tree_history.column('row', width = 60 , anchor = CENTER , minwidth = 60 )
+        self.show_tree_history.column('id', width = 65 , anchor = CENTER , minwidth = 65 )
+        self.show_tree_history.column('Name', width = 100 , anchor = CENTER , minwidth = 100 )
+        self.show_tree_history.column('category' ,width = 100 , anchor = CENTER , minwidth = 100 )
+        self.show_tree_history.column('date' ,width = 65 , anchor = CENTER, minwidth = 65 )
+        self.show_tree_history.column('Type' ,width = 75 , anchor = CENTER, minwidth = 75  )
+        self.show_tree_history.column('number' ,width = 65 , anchor = CENTER, minwidth = 65  )
+        self.show_tree_history.column('status' ,width = 100 , anchor = CENTER, minwidth = 100  )
+        self.show_tree_history.column('noqte' ,width = 100 , anchor = CENTER, minwidth = 100  )
+        self.show_tree_history.column('codeMeli' ,width = 100 , anchor = CENTER, minwidth = 100  )
+        self.show_tree_history.column('nameKarbar' ,width = 70 , anchor = CENTER, minwidth = 70  )
+        self.show_tree_history.column('codeSefaresh' ,width = 100 , anchor = CENTER, minwidth = 100  )
+        self.show_tree_history.column('lastName' ,width = 122 , anchor = CENTER, minwidth = 122  )
+
+        self.show_tree_history.heading('#0', text = ' ' , anchor = CENTER)
+        self.show_tree_history.heading('row', text = 'ردیف' , anchor = CENTER )
+        self.show_tree_history.heading('id', text = 'کد کالا' , anchor = CENTER )
+        self.show_tree_history.heading('Name', text = 'نام کالا' , anchor = CENTER )
+        self.show_tree_history.heading('category', text = 'گروه کالا' , anchor = CENTER)
+        self.show_tree_history.heading('date', text = 'تاریخ' , anchor = CENTER)
+        self.show_tree_history.heading('Type'   , text = ' نوع کالا' , anchor = CENTER )
+        self.show_tree_history.heading('number' , text = 'تعداد', anchor = CENTER  )
+        self.show_tree_history.heading('status' , text = 'وضعیت', anchor = CENTER  )
+        self.show_tree_history.heading('noqte' , text = 'نقطه خرید', anchor = CENTER  )
+        self.show_tree_history.heading('codeMeli' , text = 'کد ملی', anchor = CENTER  )
+        self.show_tree_history.heading('nameKarbar' , text = 'نام', anchor = CENTER  )
+        self.show_tree_history.heading('lastName' , text = 'نام خانوادگی', anchor = CENTER  )
+        self.show_tree_history.heading('codeSefaresh' , text = 'کد سفارش', anchor = CENTER  )
+        style.theme_use("clam")
+        style.configure("MystyleHistory.Treeview.Heading",
+                        background = '#A0A0A0',
+                        font=('Segoe UI', 14,'bold'), 
+                        relief = 'flat', bd=1
+                        ) 
+        style.map("MystyleHistory.Treeview.Heading",
+            background=[('active','#A0A0A0')])
+        
+        style.configure("MystyleHistory.Treeview", highlightthickness=0, 
+                                bd=0, font=('Segoe UI', 11),
+                                background="#F8F8F8",
+                                foreground="black",
+                                rowheight = 25,
+                                fieldbackground="#F8F8F8",   
+                                )
+        style.map("MystyleHistory.Treeview",
+            background=[('selected', '#727272')])
+        self.show_tree_history.bind('<Button-1>', self.test)
+        self.show_tree_history.bind('<ButtonRelease-1>', self.test)
+    
+        self.count3 = 1
+        self.con = sql.connect('mydb.db')
+        self.cur = self.con.cursor()
+        row = self.cur.execute('''SELECT * FROM DarKhastKharid ''')
+        self.lst_history = []
+        for i in row :
+            self.lst_history.append(i)
+        for i in self.lst_history:
+            self.show_tree_history.insert(parent='',index='end',text='',
+                                                                    values=(i[11],
+                                                                            i[10],
+                                                                            i[4],
+                                                                            i[5],
+                                                                            i[7],
+                                                                            i[8],
+                                                                            i[6],
+                                                                            i[3],
+                                                                            i[1],
+                                                                            i[0],
+                                                                            i[2],
+                                                                            i[12],
+                                                                            str(self.count3)))
+            self.lst_history = []
+            self.count3 += 1
 #--------------------------------------------------------------------
     def show_info_Karmand(self,event = None):
         codeMeliGet = self.e_search_codeMeli.get()
@@ -1176,12 +1283,12 @@ class app:
     def update_record_number(self):
         GetCodeKala = self.e_search_codeKala.get()
         GetNumKala = self.e_Get_num.get()
+        GetCodeSefaresh = self.e_Get_codeSefaresh.get()
         con = sql.connect('mydb.db')
         cur = con.cursor()
-        command = ' UPDATE Kala SET mojodi = "{}"  WHERE code="{}" '.format(GetNumKala,GetCodeKala)
+        command = ' UPDATE Kala SET mojodi = "{}", CodeSefaresh = "{}"  WHERE code="{}" '.format(GetNumKala,GetCodeSefaresh,GetCodeKala)
         cur.execute(command)
         con.commit()
-        
         self.con = sql.connect('mydb.db')
         self.cur = self.con.cursor()
         row = self.cur.execute('''SELECT  * FROM Kala WHERE code = "{}"'''.format(GetCodeKala))
@@ -1195,9 +1302,10 @@ class app:
                                                                             i[2],
                                                                             i[1],
                                                                             i[0],
-                                                                            str(self.count1+1)))
+                                                                            i[8],
+                                                                            str(self.count2+1)))
             self.lst_vorodi = []
-            self.count1 += 1
+            self.count2 += 1
         self.namKalalbl['text']= ''
         self.codeKalalbl['text']= ''
         self.groupKalalbl['text']= ''
@@ -1209,6 +1317,7 @@ class app:
         self.e_Get_num.delete(0 , END)
         self.e_search_codeKala.delete(0, END)
         self.e_search_codeMeli.delete(0, END)
+        self.e_Get_codeSefaresh.delete(0, END)
 #-------------------------add-product-Page-funcs--------------------
 
     def update_record(self):
@@ -1365,10 +1474,11 @@ class app:
                                                             tozih TEXT,
                                                             noqte TEXT,
                                                             photo BLOB,
-                                                            mojodi TEXT)'''
+                                                            mojodi TEXT,
+                                                            CodeSefaresh TEXT)'''
         self.cur.execute(self.command)
-        self.data = (self.nam_kala,self.noe_kala,self.code_kala,self.group_kala,self.tozihat,self.noqteKharid, self.photo_read, 0)
-        self.cur.execute('''INSERT INTO Kala (nam,type,code,goro,tozih,noqte,photo,mojodi) VALUES (?,?,?,?,?,?,?,?)''',self.data)
+        self.data = (self.nam_kala,self.noe_kala,self.code_kala,self.group_kala,self.tozihat,self.noqteKharid, self.photo_read, 0, 0)
+        self.cur.execute('''INSERT INTO Kala (nam,type,code,goro,tozih,noqte,photo,mojodi,CodeSefaresh) VALUES (?,?,?,?,?,?,?,?,?)''',self.data)
         self.con.commit()
         img17['file'] = 'pics/resid.png'
         self.e_nam_kala.focus()
@@ -1577,6 +1687,10 @@ class app:
         return blobdata
 
 #------------------nav-funcs----------------------
+    def exportProductPopUp(self,event = None):
+        if sabtKhoroj.state != 'normal':
+            root.state('withdraw')
+            sabtKhoroj.state('normal')
     def DarkhastKharid(self,event = None):
         if reqkalapage.state != ('normal') :
             root.state('withdraw')

@@ -5,7 +5,9 @@ from tkinter import filedialog
 import pandas as pd
 from tkinter import messagebox
 from tkcalendar import Calendar, DateEntry
-
+import numpy as np
+from matplotlib import pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  # important
 root = Tk()
 loginpage = Toplevel()
 registerpage = Toplevel()
@@ -17,8 +19,9 @@ reqkalapage = Toplevel()
 sefareshkala = Toplevel()  
 sabtKhoroj = Toplevel()
 history = Toplevel()
+# matplot = Toplevel()
 style = ttk.Style()
-    
+     
 #---------PagesBGs-Images---------------
 img1 = PhotoImage(file = "pics/login.png")
 img2 = PhotoImage(file = 'pics/mainpg.png')
@@ -31,6 +34,7 @@ img29 = PhotoImage(file = 'pics/reqPage.png')
 img31 = PhotoImage(file = 'pics/SefareshKalaPg.png')
 img33 = PhotoImage(file = 'pics/ExportKalaPg.png')
 img36 = PhotoImage(file ='pics/HistoryPg.png')
+img37 = PhotoImage(file = 'pics/MatplotPg.png')
 #---------Main-PageBtns-Images----------
 img4 = PhotoImage(file = 'pics/fish.png')
 img5 = PhotoImage(file = 'pics/darkhast.png')
@@ -80,6 +84,7 @@ class app:
         self.mojodi_page()
         self.exportProductPage()
         self.historyPage()
+        self.matplotPage()
         self.lst = []
         self.lst_emp = []
         self.lst_mojodi = []
@@ -601,7 +606,7 @@ class app:
 
     def sabtVorodPage(self):
         sabtvorod.geometry('1200x720+150+20')
-        sabtvorod.state('normal')
+        sabtvorod.state('withdraw')
         self.sabtvorod_main_lbl = Label(sabtvorod , bg = 'white' , width = 1200, height = 720 )
         self.sabtvorod_main_lbl.place( x = 0 , y = 0)
         self.sabtvorod_lbl = Label(sabtvorod , bg = 'white' , width = 1150 , height = 676 , image = img27)
@@ -642,6 +647,9 @@ class app:
         self.e_Get_codeSefaresh = Entry(sabtvorod, width = 19 , font = ('B Nazanin' , 10 , 'bold'), bg = 'white', border = 0 , justify ='right')
         self.e_Get_codeSefaresh.place( x = 369, y = 358)
 
+        
+        self.e_GetDate_sabtvorod = DateEntry(sabtvorod, width = 18 , font = ('B Nazanin' , 11), bg = 'white', border = 0 ,background='#495057',sforeground='#DEE2E6', justify ='right')
+        self.e_GetDate_sabtvorod.place( x = 120, y = 353)
 
         self.show_img_Vorodi = Label(sabtvorod , image = img17 , relief="flat",width = 100 , height= 95, bg = 'black')
         self.show_img_Vorodi.place(x = 177, y = 199 )
@@ -669,9 +677,9 @@ class app:
         self.mainPage_btn.bind('<Leave>',lambda event : self.hoverBtn(img14,'pics/main-btn.png'))
 
         self.show_tree_Vorodi = ttk.Treeview(sabtvorod ,  style="Mystyle.Treeview", height = 8)
-        self.show_tree_Vorodi.place(x = 115 , y = 399)
+        self.show_tree_Vorodi.place(x = 80 , y = 399)
 
-        self.show_tree_Vorodi['columns'] = ('noqte','number','category','id','Type','Name','orderCode','row')
+        self.show_tree_Vorodi['columns'] = ('date','noqte','number','category','id','Type','Name','orderCode','row')
 
         self.show_tree_Vorodi.column('#0', width = 0  ,stretch = NO)
         self.show_tree_Vorodi.column('row', width = 60 , anchor = CENTER , minwidth = 60 )
@@ -682,6 +690,7 @@ class app:
         self.show_tree_Vorodi.column('Type' ,width = 150 , anchor = CENTER, minwidth = 150  )
         self.show_tree_Vorodi.column('number' ,width = 100 , anchor = CENTER, minwidth = 100  )
         self.show_tree_Vorodi.column('orderCode' ,width = 110 , anchor = CENTER, minwidth = 110  )
+        self.show_tree_Vorodi.column('date' ,width = 70 , anchor = CENTER, minwidth = 70  )
 
         self.show_tree_Vorodi.heading('#0', text = ' ' , anchor = CENTER)
         self.show_tree_Vorodi.heading('row', text = 'ردیف' , anchor = CENTER )
@@ -692,6 +701,7 @@ class app:
         self.show_tree_Vorodi.heading('Type'   , text = ' نوع کالا' , anchor = CENTER )
         self.show_tree_Vorodi.heading('number' , text = 'تعداد', anchor = CENTER  )
         self.show_tree_Vorodi.heading('orderCode' , text = 'کد سفارش', anchor = CENTER  )
+        self.show_tree_Vorodi.heading('date' , text = 'تاریخ', anchor = CENTER  )
         style.theme_use("clam")
         style.configure("Mystyle.Treeview.Heading",
                         background = '#A0A0A0',
@@ -712,7 +722,7 @@ class app:
             background=[('selected', '#727272')])
 #----------------------------------------------------------------------------------       
     def reqKalaPage(self):
-        reqkalapage.state('normal')
+        reqkalapage.state('withdraw')
         reqkalapage.geometry('1200x720+150+20')
         reqkalapage.configure(bg = 'white')
         self.reqkalapage_lbl = Label(reqkalapage , bg = 'white' , width = 1150 , height = 676 , image = img29)
@@ -815,7 +825,7 @@ class app:
         self.e_search_codeKala.insert(0,data[0][2])
 
     def SefareshKalaPage(self):
-        sefareshkala.state('normal')
+        sefareshkala.state('withdraw')
         sefareshkala.geometry('1200x720+150+20')
         sefareshkala.configure(bg = 'white')
         self.sefareshkala_lbl = Label(sefareshkala , bg = 'white' , width = 1150 , height = 676 , image = img31)
@@ -1067,7 +1077,7 @@ class app:
 
 
     def exportProductPage(self):
-        sabtKhoroj.state('normal')
+        sabtKhoroj.state('withdraw')
         sabtKhoroj.geometry('1200x720+150+20')
         sabtKhoroj.configure(bg = 'white')
         self.exportkala_lbl = Label(sabtKhoroj , bg = 'white' , width = 1150 , height = 676 , image = img33)
@@ -1169,7 +1179,7 @@ class app:
         # tedadDarkhast1 = int(tedadDarkhast)
 #------------------------historyPage-------------------------------------
     def historyPage(self):
-        history.state('normal')
+        history.state('withdraw')
         history.geometry('1200x720+150+20')
         history.configure(bg = 'white')
         self.history_lbl = Label(history , bg = 'white' , width = 1150 , height = 676 , image = img36)
@@ -1255,6 +1265,31 @@ class app:
                                                                             str(self.count3)))
             self.lst_history = []
             self.count3 += 1
+
+    #----------------------historyPage-------------------------------------
+    def matplotPage(self):
+        # matplot.state('normal')
+        # # matplot.geometry('750x488+380+120')
+        # matplot.title('Matplot')
+        # # matplot.configure(bg = 'white')
+        # # self.matplot_lbl = Label(matplot , bg = 'white' , width = 712 , height = 458 , image = img37)
+        # # self.matplot_lbl.place(x = 19 , y = 15)
+
+        # self.con = sql.connect('mydb.db')
+        # # self.cur = self.con.cursor(df)
+        # df = pd.read_sql_query("SELECT date FROM DarKhastKharid", self.con)
+        # df1 = pd.read_sql_query("SELECT mojodi FROM Kala", self.con)
+
+        # plt.plot()
+        # plt.xlabel('تاریخ')
+        # plt.ylabel('تعداد')
+        # plt.show()
+        # plt.ioff()
+        # self.con.close()
+
+        arr = np.random.randn(100)
+        plt.plot(arr)
+        plt.show()
 #--------------------------------------------------------------------
     def show_info_Karmand(self,event = None):
         codeMeliGet = self.e_search_codeMeli.get()
@@ -1284,9 +1319,10 @@ class app:
         GetCodeKala = self.e_search_codeKala.get()
         GetNumKala = self.e_Get_num.get()
         GetCodeSefaresh = self.e_Get_codeSefaresh.get()
+        GetDateSefaresh = self.e_GetDate_sabtvorod.get()
         con = sql.connect('mydb.db')
         cur = con.cursor()
-        command = ' UPDATE Kala SET mojodi = "{}", CodeSefaresh = "{}"  WHERE code="{}" '.format(GetNumKala,GetCodeSefaresh,GetCodeKala)
+        command = ' UPDATE Kala SET mojodi = "{}", CodeSefaresh = "{}", dateSefaresh = "{}"   WHERE code="{}" '.format(GetNumKala,GetCodeSefaresh,GetDateSefaresh,GetCodeKala)
         cur.execute(command)
         con.commit()
         self.con = sql.connect('mydb.db')
@@ -1296,7 +1332,8 @@ class app:
             self.lst_vorodi.append(i)
         for i in self.lst_vorodi:
             self.show_tree_Vorodi.insert(parent='',index='end',text='',
-                                                                    values=(i[5],
+                                                                    values=(i[9],
+                                                                            i[5],
                                                                             i[7],
                                                                             i[3],
                                                                             i[2],
@@ -1318,6 +1355,7 @@ class app:
         self.e_search_codeKala.delete(0, END)
         self.e_search_codeMeli.delete(0, END)
         self.e_Get_codeSefaresh.delete(0, END)
+        self.e_GetDate_sabtvorod.delete(0, END)
 #-------------------------add-product-Page-funcs--------------------
 
     def update_record(self):
@@ -1475,10 +1513,11 @@ class app:
                                                             noqte TEXT,
                                                             photo BLOB,
                                                             mojodi TEXT,
-                                                            CodeSefaresh TEXT)'''
+                                                            CodeSefaresh TEXT,
+                                                            dateSefaresh TEXT)'''
         self.cur.execute(self.command)
-        self.data = (self.nam_kala,self.noe_kala,self.code_kala,self.group_kala,self.tozihat,self.noqteKharid, self.photo_read, 0, 0)
-        self.cur.execute('''INSERT INTO Kala (nam,type,code,goro,tozih,noqte,photo,mojodi,CodeSefaresh) VALUES (?,?,?,?,?,?,?,?,?)''',self.data)
+        self.data = (self.nam_kala,self.noe_kala,self.code_kala,self.group_kala,self.tozihat,self.noqteKharid, self.photo_read, 0, 0 , 0)
+        self.cur.execute('''INSERT INTO Kala (nam,type,code,goro,tozih,noqte,photo,mojodi,CodeSefaresh,dateSefaresh) VALUES (?,?,?,?,?,?,?,?,?,?)''',self.data)
         self.con.commit()
         img17['file'] = 'pics/resid.png'
         self.e_nam_kala.focus()

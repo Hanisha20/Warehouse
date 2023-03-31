@@ -1288,7 +1288,14 @@ class app:
         # self.con.close()
 
         arr = np.random.randn(100)
-        plt.plot(arr)
+        plt.plot(arr, color = 'b' ,
+            linewidth = 1 , 
+            linestyle = '--' , # '-' , '--' , '-.' , ':'
+            marker = 'o',
+            markersize = 8 , 
+            markerfacecolor = 'lightblue',
+            markeredgecolor = 'brown',
+            markeredgewidth = 1  )
         plt.show()
 #--------------------------------------------------------------------
     def show_info_Karmand(self,event = None):

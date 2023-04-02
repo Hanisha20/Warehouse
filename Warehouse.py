@@ -69,7 +69,8 @@ img22 = PhotoImage(file = 'pics/sub-update.png')
 img23 = PhotoImage(file = 'pics/Search-btn.png')
 img28 = PhotoImage(file = 'pics/Search-btn1.png')
 #---------product-select-Images----------
-img17 = PhotoImage(file = 'pics/resid.png')
+# img42 = PhotoImage(file = 'pics/resid.png')
+img42 = PhotoImage(file = 'pics/download.png')
 #---------Add-employee-PageBtns-Images----------
 #---------mojodi-PageBtns-Images----------
 img26 = PhotoImage(file = 'pics/searchBtn-mojodi.png')
@@ -82,6 +83,26 @@ img34 = PhotoImage(file = 'pics/export-btn.png')
 #---------History-PageBtns-Images----------
 img39  = PhotoImage(file = 'pics/qabz-btn.png')
 img40 = PhotoImage(file = 'pics/chart-btn.png')
+
+class ChekNumbers:
+    def set_name(self,instance,key):
+        print('set_name')
+        self.key = key
+
+    def get(self,instance,owner):
+        print('get')
+        return  instance.dict[self.key]
+
+    def set(self,instance,value):
+        if value.isdigit():
+            print('set')
+        else:
+            print('Error')
+
+    def delete(self,instance):
+        print('delete')
+        del instance.dict[self.key]
+
 class app:
     '''
     Hani ShahabiZadeh
@@ -274,7 +295,8 @@ class app:
         self.con.commit()
         self.con.close()
         messagebox.showinfo('ثبتنام', '!مشخصات شما با موفقیت ثبت شد')
-
+        registerpage.state('withdraw')
+        self.loginState()
     def checkRegisterTable(self):
         self.con = sql.connect('mydb.db')
         self.cur = self.con.cursor()
@@ -293,7 +315,7 @@ class app:
         loginpage.state('normal')
         
 
-
+#---------------------------------ProductPage and functoins ----------------------------------------------
     def ProductPage(self, event = None) :
         self.productpage = productpage
         productpage.title('ثبت کالا')
@@ -310,7 +332,7 @@ class app:
         self.e_nam_kala.focus()
         self.e_nam_kala.bind('<Return>', lambda event : self.e_noe_kala.focus())
 
-        self.noeKala_options = ['موتوری', 'خانگی']
+        self.noeKala_options = ['مصرفی', 'تولیدی','خریداری شده']
         self.e_noe_kala = ttk.Combobox(productpage, state = 'readonly', value = self.noeKala_options , width = 15 , font = ('Segoe UI' , 11) , justify = 'right' )
         self.e_noe_kala.set('انتخاب کنید')
         self.e_noe_kala.place( x = 614, y = 149)
@@ -382,7 +404,7 @@ class app:
         self.update_sub_btn.bind('<Enter>',lambda event : self.hoverBtn(img22,'pics/sub-update-hover.png'))
         self.update_sub_btn.bind('<Leave>',lambda event : self.hoverBtn(img22,'pics/sub-update.png'))
 
-        self.show_image = Label(productpage, image = img17 , relief="flat", width = 100 , height= 95)
+        self.show_image = Label(productpage, image = img42 , relief="flat", width = 100 , height= 95)
         self.show_image.place(x=125, y= 242)
 
         self.show_tree = ttk.Treeview(productpage ,  style="mystyle.Treeview", height = 6)
@@ -422,6 +444,208 @@ class app:
         self.show_tree.bind('<ButtonRelease-1>', self.show_info)
         style.map("mystyle.Treeview",
             background=[('selected', '#727272')])
+            
+    def AddKala_to_sql(self):
+        self.nam_kala = self.e_nam_kala.get()
+        self.noe_kala = self.e_noe_kala.get()
+        self.code_kala = self.e_code_kala.get()
+        self.group_kala = self.e_group_kala.get()
+        self.tozihat = self.e_tozihat.get()
+        self.noqteKharid = self.e_noqte.get()
+        self.photo_read = self.convert_to_binary_data(self.img_name)
+        self.numlist_product=len(self.show_tree.get_children())
+        self.show_tree.insert(parent = '',
+                             index = 'end',
+                             text = 'parent',
+                             values = (self.noqteKharid,
+                                        self.group_kala,
+                                        self.code_kala,
+                                        self.noe_kala,
+                                        self.nam_kala,
+                                        self.numlist_product+1))
+        self.e_nam_kala.delete(0, END)
+        self.e_code_kala.delete(0, END)
+        self.e_tozihat.delete(0, END)
+        self.e_noqte.delete(0, END)
+        self.e_noe_kala.set('انتخاب کنید')
+        self.e_group_kala.set('انتخاب کنید')
+        self.show_image['image'] = img42
+        self.con=sql.connect('mydb.db')
+        self.cur=self.con.cursor()
+        self.command='''CREATE TABLE IF NOT EXISTS Kala (   nam TEXT,
+                                                            type TEXT ,
+                                                            code TEXT ,
+                                                            goro TEXT,
+                                                            tozih TEXT,
+                                                            noqte TEXT,
+                                                            photo BLOB,
+                                                            mojodi TEXT,
+                                                            CodeSefaresh TEXT,
+                                                            dateSefaresh TEXT)'''
+        self.cur.execute(self.command)
+        self.data = (self.nam_kala,self.noe_kala,self.code_kala,self.group_kala,self.tozihat,self.noqteKharid, self.photo_read, 0, 0 , 0)
+        self.cur.execute('''INSERT INTO Kala (nam,type,code,goro,tozih,noqte,photo,mojodi,CodeSefaresh,dateSefaresh) VALUES (?,?,?,?,?,?,?,?,?,?)''',self.data)
+        self.con.commit()
+        img42['file'] = 'pics/6522516.png'
+        self.e_nam_kala.focus()
+        self.data_to_list()
+        messagebox.showinfo('اضافه شد' , 'کالا به لیست انبار اضافه شد')
+
+    def search(self,event = None):
+        self.con=sql.connect('mydb.db')
+        self.cur=self.con.cursor()
+        self.search_get=self.e_search.get()
+        self.count=0
+        if self.search_get !='':
+            for i in self.show_tree.get_children():
+                self.show_tree.delete(i)
+            self.row=self.cur.execute('SELECT * FROM kala WHERE code="{}"'.format(self.search_get))
+            self.search_list=list(self.row)
+
+            self.show_tree.insert(parent='',index='end',iid=self.count,text='',
+                                values=(self.search_list[0][5],
+                                        self.search_list[0][3],
+                                        self.search_list[0][2],
+                                        self.search_list[0][1],
+                                        self.search_list[0][0],
+                                        str(self.count+1)))
+        else:
+            self.lst=[]
+            self.show_tree.delete('0')
+            self.data_to_list()
+            self.show_image['image'] = img42
+
+    def update_record(self):
+        self.selected =  self.show_tree.focus()
+        self.show_tree.item(self.selected ,values = (self.e_nam_kala.get(),
+                                                        self.e_noe_kala.get(),
+                                                        self.e_code_kala.get(),
+                                                        self.e_group_kala.get(),
+                                                        self.e_tozihat.get(),
+                                                        self.e_noqte.get()))
+        self.e_nam_kala.delete(0, END)
+        self.e_noe_kala.delete(0, END)
+        self.e_code_kala.delete(0, END)
+        self.e_group_kala.delete(0, END)
+        self.e_tozihat.delete(0, END)
+        self.e_noqte.delete(0, END)
+
+    def sql_search(self,id1):
+        con = sql.connect('mydb.db')
+        cur = con.cursor()
+        row = cur.execute('SELECT * FROM kala WHERE code="{}"'.format(id1))
+        return list(row)
+
+    def show_info(self,event = None) :
+        self.e_noe_kala.set("یک گزینه را انتخاب کنید")
+        self.e_group_kala.set("یک گزینه را انتخاب کنید")
+        self.e_code_kala.delete(0,END)
+        self.e_nam_kala.delete(0,END)
+        self.e_noqte.delete(0,END)
+        self.e_tozihat.delete(0,END)
+    
+        self.selected = self.show_tree.focus()
+        self.values = self.show_tree.item(self.selected , "values")
+
+        con = sql.connect('mydb.db')
+        cur = con.cursor()
+        cur.execute("SELECT photo FROM Kala WHERE code = '{}'".format(self.values[2]))
+        self.image_data = cur.fetchone()[0]
+        self.product_img = Image.open(io.BytesIO(self.image_data))
+        self.product_img = self.product_img.resize((400, 100))
+        self.product_photo = ImageTk.PhotoImage(self.product_img)
+        self.show_image = Label(productpage , image=self.product_photo, width = 100 , height= 95)
+        self.show_image.place(x=125, y= 242)
+
+        self.valuelst = self.sql_search(self.values[2])
+        self.e_nam_kala.insert(0,self.valuelst[0][0])
+        self.e_noe_kala.set(self.valuelst[0][1])
+        self.e_code_kala.insert(0,self.valuelst[0][2])
+        self.e_group_kala.set(self.valuelst[0][3])
+        self.e_noqte.insert(0,self.valuelst[0][5])
+        self.e_tozihat.insert(0,self.valuelst[0][4])
+    def edit(self,event = None):
+        self.nam_kala = self.e_nam_kala.get()
+        self.noe_kala = self.e_noe_kala.get()
+        self.code_kala = self.e_code_kala.get()
+        self.group_kala = self.e_group_kala.get()
+        self.tozihat = self.e_tozihat.get()
+        self.noqteKharid = self.e_noqte.get()
+        
+        self.sql_update(self.values[2],self.nam_kala,self.noe_kala,self.code_kala,self.group_kala,self.tozihat,self.noqteKharid)
+
+        self.show_tree.item(self.selected ,values = (self.noqteKharid,self.group_kala,self.code_kala,self.noe_kala,self.nam_kala,self.values[5]))
+        messagebox.showinfo('ویرایش' , 'مشخصات با موفقیت ویرایش شدند')
+    def sql_update(self,id1,name1,noe_kala1,code1,group1,tozih1,noqte1):
+        con = sql.connect('mydb.db')
+        cur = con.cursor()
+
+        command = ' UPDATE kala SET code = "{}" , nam = "{}", type = "{}", goro = "{}", tozih = "{}",noqte = "{}" WHERE code="{}" '.format(code1,name1,noe_kala1,group1,tozih1,noqte1,id1)
+        cur.execute(command)
+        con.commit()
+
+        self.e_nam_kala.delete(0, END)
+        self.e_code_kala.delete(0, END)
+        self.e_tozihat.delete(0, END)
+        self.e_noqte.delete(0, END)
+        self.e_noe_kala.set('انتخاب کنید')
+        self.e_group_kala.set('انتخاب کنید')
+        
+    def Remove(self):
+        delete_one = self.show_tree.selection()[0]
+        self.show_tree.delete(delete_one)
+        con = sql.connect('mydb.db')
+        cur = con.cursor()
+        cur.execute('''DELETE FROM Kala WHERE code ='''+ self.e_code_kala.get())
+        con.commit()
+        con.close()
+        self.show_image['image'] = img42
+        for item in self.show_tree.get_children():
+            self.show_tree.delete(item)
+
+        self.lst =[] 
+        self.data_to_list()
+
+        self.e_nam_kala.delete(0, END)
+        self.e_code_kala.delete(0, END)
+        self.e_tozihat.delete(0, END)
+        self.e_noqte.delete(0, END)
+        self.e_noe_kala.set('انتخاب کنید')
+        self.e_group_kala.set('انتخاب کنید')
+        self.show_image['image'] = img42
+        messagebox.showinfo('حذف آیتم', '!آیتم شما با موفقیت حذف شد')
+
+    def Remove_all (self) :
+        for i in self.show_tree.get_children():
+            self.show_tree.delete(i)
+        con = sql.connect('mydb.db')
+        cur = con.cursor()
+        command = ''' DELETE FROM Kala '''
+        cur.execute(command)    
+        con.commit()
+        messagebox.showinfo('حذف آیتم', '!تمامی آیتم های شما با موفقیت حذف شد')
+        self.e_nam_kala.delete(0, END)
+        self.e_code_kala.delete(0, END)
+        self.e_tozihat.delete(0, END)
+        self.e_noqte.delete(0, END)
+        self.e_noe_kala.set('انتخاب کنید')
+        self.e_group_kala.set('انتخاب کنید')
+
+    def data_to_list(self,event = None):
+        self.lst = []
+        self.count = 0
+        for item in self.show_tree.get_children():
+            self.show_tree.delete(item)
+            print(item)
+        self.con = sql.connect('mydb.db')
+        self.cur = self.con.cursor()
+        row = self.cur.execute('''SELECT  * FROM Kala''')
+        for i in row :
+            self.lst.append(i)
+        for i in self.lst:
+            self.show_tree.insert(parent='',index='end',text='',
+                                 values=(i[5],i[3],i[2],i[1],i[0],str(self.count+1)))
+            self.count += 1
     
     def AddEmployeePage(self, event = None):
         self.employeepage = employeepage
@@ -457,10 +681,10 @@ class app:
         self.e_position_combo.set('انتخاب کنید')
         self.e_position_combo.place( x = 258, y = 161)
         
-        self.show_image_employee = Label(employeepage, image = img17 , relief="flat",width = 100 , height= 95, bg = 'black')
+        self.show_image_employee = Label(employeepage, image = img42 , relief="flat",width = 100 , height= 95)
         self.show_image_employee.place(x=139, y= 146)
 
-        self.select_img_btn_employee = Button(employeepage , bg = '#A7A7A7' , width = 105 , height = 37 , image = img16 ,activebackground= '#A7A7A7', borderwidth = 0, command = self.select_image )
+        self.select_img_btn_employee = Button(employeepage , bg = '#A7A7A7' , width = 105 , height = 37 , image = img16 ,activebackground= '#A7A7A7', borderwidth = 0, command = self.select_image_empolyee )
         self.select_img_btn_employee.place(x =139 , y = 265) 
         self.select_img_btn_employee.bind('<Enter>',lambda event : self.hoverBtn(img16,'pics/select-img-hover.png'))
         self.select_img_btn_employee.bind('<Leave>',lambda event :  self.hoverBtn(img16,'pics/select-img.png'))
@@ -539,7 +763,185 @@ class app:
         self.show_tree_employee.bind('<ButtonRelease-1>', self.show_info_emp)
         style.map("mystyle.Treeview",
             background=[('selected', '#727272')])
+    def Addemp_to_sql(self):
+        self.nam = self.e_nam.get()
+        self.family = self.e_family.get()
+        self.code_meli = self.e_code_meli.get()
+        self.jensiat = self.e_jensiat_combo.get()
+        self.position = self.e_position_combo.get()
+        self.photo_read_emp = self.convert_to_binary_data(self.img_name)
+
+        self.numlist=len(self.show_tree_employee.get_children())
         
+        self.show_tree_employee.insert(parent = '',
+                             index = 'end',
+                             text = 'parent',
+                             values = (self.position,
+                                        self.jensiat,
+                                        self.code_meli,
+                                        self.family,
+                                        self.nam,
+                                        self.numlist+1))
+        self.e_nam.delete(0, END)
+        self.e_family.delete(0, END)
+        self.e_code_meli.delete(0, END)
+        self.e_jensiat_combo.set('انتخاب کنید')
+        self.e_position_combo.set('انتخاب کنید')
+        self.show_image_employee['image'] = img42
+        
+        self.con=sql.connect('mydb.db')
+        self.cur=self.con.cursor()
+        self.command='''CREATE TABLE IF NOT EXISTS SabtKarmand (nam TEXT,
+                                                            family TEXT ,
+                                                            codeMeli TEXT ,
+                                                            jensiat TEXT,
+                                                            position TEXT,
+                                                            photo BLOB)'''
+        self.cur.execute(self.command)
+        self.data_emp = (self.nam,self.family,self.code_meli,self.jensiat,self.position,self.photo_read_emp)
+        self.cur.execute('''INSERT INTO SabtKarmand (nam,family,codeMeli,jensiat,position,photo) VALUES (?,?,?,?,?,?)''',self.data_emp)
+        self.con.commit()
+        
+        img42['file'] = 'pics/6522516.png'
+        self.e_nam.focus()
+
+
+
+
+    def search_emp(self,event = None):
+        self.con=sql.connect('mydb.db')
+        self.cur=self.con.cursor()
+        self.search_get_emp=self.e_search_employee.get()
+        self.count_emp=0
+        if self.search_get_emp != '':
+            for i in self.show_tree_employee.get_children():
+                self.show_tree_employee.delete(i)
+            self.row=self.cur.execute('SELECT * FROM SabtKarmand WHERE codeMeli="{}"'.format(self.search_get_emp))
+            self.search_list_emp=list(self.row)
+            
+            self.show_tree_employee.insert(parent='',index='end',iid=self.count_emp,text='',
+                                values=(self.search_list_emp[0][4],
+                                        self.search_list_emp[0][3],
+                                        self.search_list_emp[0][2],
+                                        self.search_list_emp[0][1],
+                                        self.search_list_emp[0][0],
+                                        str(self.count_emp+1)))
+        else:
+            self.lst_emp=[]
+            self.show_tree_employee.delete('0')
+            self.data_to_list_emp()
+    def Remove_emp(self):
+        delete_one = self.show_tree_employee.selection()[0]
+        self.show_tree_employee.delete(delete_one)
+        con = sql.connect('mydb.db')
+        cur = con.cursor()
+        cur.execute('''DELETE FROM SabtKarmand WHERE codeMeli ='''+ self.e_code_meli.get())
+        con.commit()
+        con.close()
+
+
+        for item in self.show_tree_employee.get_children():
+            self.show_tree_employee.delete(item)
+
+        self.lst_emp =[]
+        
+        self.data_to_list_emp()
+
+        self.e_nam.delete(0, END)
+        self.e_family.delete(0, END)
+        self.e_code_meli.delete(0, END)
+        self.e_jensiat_combo.set('انتخاب کنید')
+        self.e_position_combo.set('انتخاب کنید')
+        self.show_image_employee['image'] = img42
+        messagebox.showinfo('حذف آیتم', '!آیتم شما با موفقیت حذف شد')
+
+    def Remove_all_emp(self):
+        for i in self.show_tree_employee.get_children():
+            self.show_tree_employee.delete(i)
+        con = sql.connect('mydb.db')
+        cur = con.cursor()
+        command = ''' DELETE FROM SabtKarmand '''
+        cur.execute(command)    
+        con.commit()
+        messagebox.showinfo('حذف آیتم', '!تمامی آیتم های شما با موفقیت حذف شد')
+        self.e_nam.delete(0, END)
+        self.e_family.delete(0, END)
+        self.e_code_meli.delete(0, END)
+        self.e_jensiat_combo.set('انتخاب کنید')
+        self.e_position_combo.set('انتخاب کنید')
+        self.show_image_employee['image'] = img42
+        self.e_nam.focus()
+    def edit_emp(self):
+        self.nam = self.e_nam.get()
+        self.family = self.e_family.get()
+        self.code_meli = self.e_code_meli.get()
+        self.jensiat = self.e_jensiat_combo.get()
+        self.position = self.e_position_combo.get()
+        
+        self.sql_update_emp(self.values[2],self.nam,self.family,self.code_meli,self.jensiat,self.position)
+
+        self.show_tree_employee.item(self.selected ,values = (self.position,self.jensiat,self.code_meli,self.family,self.nam,self.values[5]))
+        messagebox.showinfo('ویرایش' , 'مشخصات با موفقیت ویرایش شدند')
+
+    def sql_update_emp(self,id1,name1,family1,code1,jensiat1,position1):
+        con = sql.connect('mydb.db')
+        cur = con.cursor()
+        command = ' UPDATE SabtKarmand SET codeMeli = "{}" , nam = "{}", family = "{}", jensiat = "{}", position = "{}" WHERE codeMeli ="{}" '.format(code1,name1,family1,jensiat1,position1,id1)
+        cur.execute(command)
+        con.commit()
+
+    def show_info_emp(self,event = None) :
+        self.e_nam.delete(0, END)
+        self.e_family.delete(0, END)
+        self.e_code_meli.delete(0, END)
+        self.e_jensiat_combo.set('انتخاب کنید')
+        self.e_position_combo.set('انتخاب کنید')
+    
+        self.selected = self.show_tree_employee.focus()
+        self.values = self.show_tree_employee.item(self.selected , "values")
+        # print(self.values[2])
+        self.valuelst = self.sql_search_emp(self.values[2])
+        self.e_nam.insert(0,self.valuelst[0][0])
+        self.e_family.insert(0,self.valuelst[0][1])
+        self.e_code_meli.insert(0,self.valuelst[0][2])
+        self.e_jensiat_combo.set(self.valuelst[0][3])
+        self.e_position_combo.set(self.valuelst[0][4])
+        # self.show_image_employee['image'] = self.photo_read_emp
+        con = sql.connect('mydb.db')
+        cur = con.cursor()
+        cur.execute("SELECT photo FROM SabtKarmand WHERE codeMeli = '{}'".format(self.values[2]))
+        self.image_data = cur.fetchone()[0]
+        self.product_img = Image.open(io.BytesIO(self.image_data))
+        self.product_img = self.product_img.resize((400, 100))
+        self.product_photo = ImageTk.PhotoImage(self.product_img)
+        self.show_image_employee = Label(employeepage , image=self.product_photo, width = 100 , height= 95)
+        self.show_image_employee.place(x=139, y= 146)
+
+        # self.product_img = Image.open(io.BytesIO(self.image_data))
+        # self.product_img = self.product_img.resize((400, 100))
+        # self.product_photo = ImageTk.PhotoImage(self.product_img)
+
+    def data_to_list_emp(self,event = None):
+        self.count_emp = 1
+        self.con = sql.connect('mydb.db')
+        self.cur = self.con.cursor()
+        row = self.cur.execute('''SELECT * FROM SabtKarmand''')
+        for i in row :
+            self.lst_emp.append(i)
+        for i in self.lst_emp:
+            self.show_tree_employee.insert(parent='',index='end',iid=self.count_emp,text='',
+                                 values=(i[4],i[3],i[2],i[1],i[0],str(self.count_emp)))
+            self.count_emp += 1
+    
+    def sql_search_emp(self,id1):
+        con = sql.connect('mydb.db')
+        cur = con.cursor()
+        row = cur.execute('SELECT * FROM SabtKarmand WHERE codeMeli="{}"'.format(id1))
+        return list(row)
+    
+#----------------------------------------------------------------   
+        
+#----------------------mojodi_page and functions------------------------------------------   
     def mojodi_page(self):
         self.mojodipage = mojodipage
         mojodipage.title('موجودی کالاها')
@@ -678,7 +1080,11 @@ class app:
             self.lst_mojodi=[]
             self.show_tree_mojodipage.delete('0')
             self.data_to_stock()
+#----------------------------------------------------------------------------------
 
+
+
+#----------------------------sabtVorodPage and functions------------------------------------------------------
     def sabtVorodPage(self): 
         sabtvorod.geometry('1200x720+150+20')
         sabtvorod.title('ثبت ورود کالا')
@@ -727,7 +1133,7 @@ class app:
         self.e_GetDate_sabtvorod = DateEntry(sabtvorod, width = 18 , font = ('B Nazanin' , 11), bg = 'white', border = 0 ,background='#495057',sforeground='#DEE2E6', justify ='right')
         self.e_GetDate_sabtvorod.place( x = 120, y = 353)
 
-        self.show_img_Vorodi = Label(sabtvorod , image = img17 , relief="flat",width = 100 , height= 95, bg = 'black')
+        self.show_img_Vorodi = Label(sabtvorod , image = img42 , relief="flat",width = 100 , height= 95, bg = 'black')
         self.show_img_Vorodi.place(x = 177, y = 199 )
 #----------------------------------------------------------------
         self.namKalalbl = Label(sabtvorod , bg = '#EEEEEE', width = 18 , height = 1, font = ('Segoe UI' , 12, 'bold'), text = '' , fg = 'black', justify = 'right')
@@ -796,269 +1202,43 @@ class app:
                                 )
         style.map("Mystyle.Treeview",
             background=[('selected', '#727272')])
-#----------------------------------------------------------------------------------       
-    def reqKalaPage(self):
-        reqkalapage.title('درخواست خرید')
-        reqkalapage.state('withdraw')
-        reqkalapage.geometry('1200x720+150+20')
-        reqkalapage.configure(bg = 'white')
-        self.reqkalapage_lbl = Label(reqkalapage , bg = 'white' , width = 1150 , height = 676 , image = img29)
-        self.reqkalapage_lbl.place(x = 25 , y = 25)
         
-        self.show_tree_reqkalapage = ttk.Treeview(reqkalapage ,  style="Mystyle.Treeview", height = 16)
-        self.show_tree_reqkalapage.place(x = 145 , y = 200)
-
-        self.show_tree_reqkalapage['columns'] = ('noqte','number','category','id','Type','Name','row')
-
-        self.show_tree_reqkalapage.column('#0', width = 0  ,stretch = NO)
-        self.show_tree_reqkalapage.column('row', width = 60 , anchor = CENTER , minwidth = 60 )
-        self.show_tree_reqkalapage.column('id', width = 100 , anchor = CENTER , minwidth = 100 )
-        self.show_tree_reqkalapage.column('Name', width = 150 , anchor = CENTER , minwidth = 150 )
-        self.show_tree_reqkalapage.column('category' ,width = 150 , anchor = CENTER , minwidth = 150 )
-        self.show_tree_reqkalapage.column('noqte' ,width = 156 , anchor = CENTER, minwidth = 156 )
-        self.show_tree_reqkalapage.column('Type' ,width = 150 , anchor = CENTER, minwidth = 150  )
-        self.show_tree_reqkalapage.column('number' ,width = 150 , anchor = CENTER, minwidth = 150  )
-
-        self.show_tree_reqkalapage.heading('#0', text = ' ' , anchor = CENTER)
-        self.show_tree_reqkalapage.heading('row', text = 'ردیف' , anchor = CENTER )
-        self.show_tree_reqkalapage.heading('id', text = 'کد کالا' , anchor = CENTER )
-        self.show_tree_reqkalapage.heading('Name', text = 'نام کالا' , anchor = CENTER )
-        self.show_tree_reqkalapage.heading('category', text = 'گروه کالا' , anchor = CENTER)
-        self.show_tree_reqkalapage.heading('noqte', text = 'نقطه خرید' , anchor = CENTER)
-        self.show_tree_reqkalapage.heading('Type'   , text = ' نوع کالا' , anchor = CENTER )
-        self.show_tree_reqkalapage.heading('number' , text = 'تعداد', anchor = CENTER  )
-        style.theme_use("clam")
-        style.configure("Mystyle.Treeview.Heading",
-                        background = '#A0A0A0',
-                        font=('Segoe UI', 15,'bold'), 
-                        relief = 'flat', bd=1
-                        ) 
-        style.map("Mystyle.Treeview.Heading",
-            background=[('active','#A0A0A0')])
-        
-        style.configure("Mystyle.Treeview", highlightthickness=0, 
-                                bd=0, font=('Segoe UI', 11),
-                                background="#F8F8F8",
-                                foreground="black",
-                                rowheight = 25,
-                                fieldbackground="#F8F8F8",   
-                                )
-        style.map("Mystyle.Treeview",
-            background=[('selected', '#727272')])
-        self.show_tree_reqkalapage.bind('<Button-1>', self.test)
-        self.show_tree_reqkalapage.bind('<ButtonRelease-1>', self.test)
-        self.sefaresh_btn = Button(reqkalapage , bg = 'white' , width = 147 , height = 40 , image = img30 ,activebackground= '#ffffff', borderwidth = 0 , command= self.req_order)#
-        self.sefaresh_btn.place(x = 440 , y = 650) 
-        self.sefaresh_btn.bind('<Enter>',lambda event : self.hoverBtn(img30,'pics/sefaresh-btn-hover.png'))
-        self.sefaresh_btn.bind('<Leave>',lambda event : self.hoverBtn(img30,'pics/sefaresh-btn.png'))
-
-        self.mainPage_btn = Button(reqkalapage , bg = 'white' , width = 147 , height = 40 , image = img14 ,activebackground= '#ffffff', borderwidth = 0 , command = self.BackMenu)
-        self.mainPage_btn.place(x = 603 , y = 650) 
-        self.mainPage_btn.bind('<Enter>',lambda event : self.hoverBtn(img14,'pics/main-btn-hover.png'))
-        self.mainPage_btn.bind('<Leave>',lambda event : self.hoverBtn(img14,'pics/main-btn.png'))
-
-    def data_to_req_table(self) :
-        self.req_lst = []
-        for i in self.show_tree_reqkalapage.get_children():
-            self.show_tree_reqkalapage.delete(i)
-        self.req_count=0
-        self.con=sql.connect('mydb.db')
-        self.cur=self.con.cursor()
-        self.row=self.cur.execute('SELECT * FROM Kala')
-        for i in self.row :
-            self.req_lst.append(i)
-        for i in self.req_lst:
-            if int(i[5]) > int(i[7]) :
-                self.show_tree_reqkalapage.insert(parent='',index='end',iid=self.req_count,text='',
-                values=(i[5],i[7],i[3],i[2],i[1],i[0],str(self.req_count+1)))
-                self.req_count += 1
-    # def purchase_select(self, event = None) :
-    def req_order(self,event = None) :
-        self.purchase_selected = self.show_tree_reqkalapage.focus()
-        self.purchase_values = self.show_tree_reqkalapage.item(self.purchase_selected , "values")
-        sabtvorod.state("withdraw")
+    def show_info_Karmand(self,event = None):
+        codeMeliGet = self.e_search_codeMeli.get()
         con = sql.connect('mydb.db')
         cur = con.cursor()
-        self.import_product_data = cur.execute('SELECT * FROM Kala WHERE code="{}"'.format(self.purchase_values[3]))
-        self.import_product_data = list(self.import_product_data)
-        print(self.purchase_values[3])
-        self.minimum_number = int(self.import_product_data[0][5]) - int(self.import_product_data[0][7])
-        self.e_Get_num.insert(0,self.minimum_number)
-        # self.pr_code_ent.insert(0,self.req_values[4])
-        self.import_prduct_fill()
-        if sabtvorod.state != ('normal') :
-            reqkalapage.state('withdraw')
-            sabtvorod.state('normal')
-
-        con = sql.connect('mydb.db')
-        cur = con.cursor()
-        cur.execute("SELECT photo FROM Kala WHERE code = '{}'".format(self.purchase_values[3]))
-        self.image_data = cur.fetchone()[0]
-        self.product_img = Image.open(io.BytesIO(self.image_data))
-        self.product_photo = ImageTk.PhotoImage(self.product_img)
-        self.show_img_Vorodi = Label(sabtvorod , image=self.product_photo, width = 100 , height= 95)
-        self.show_img_Vorodi.place(x = 177, y = 199 )
-
-
-    def import_prduct_fill(self):
-        GetNumKala = self.e_Get_num.get()
-        GetCodeKala = self.purchase_values[3]
+        data = cur.execute('SELECT * FROM SabtKarmand WHERE codeMeli="{}"'.format(codeMeliGet))
+        data = list(data)
+        print(data)
+        self.namlbl['text']= data[0][0]
+        self.lastNamelbl['text']= data[0][1]
+        self.codeMelilbl['text']= data[0][2]
+        self.genderlbl['text']= data[0][3]
+        
+    def show_info_Kala(self,event = None):
+        GetCodeKala = self.e_search_codeKala.get()
         con = sql.connect('mydb.db')
         cur = con.cursor()
         data = cur.execute('SELECT * FROM Kala WHERE code="{}"'.format(GetCodeKala))
         data = list(data)
         print(data)
         self.namKalalbl['text']= data[0][0]
-        self.codeKalalbl['text']= data[0][2]
-        self.groupKalalbl['text']= data[0][3]
-        self.NoeKalalbl['text']= data[0][1]
-        self.e_search_codeKala.insert(0,data[0][2])
-
-    def SefareshKalaPage(self):
-        sefareshkala.title('درخواست خروج')
-        sefareshkala.state('withdraw')
-        sefareshkala.geometry('1200x720+150+20')
-        sefareshkala.configure(bg = 'white')
-        self.sefareshkala_lbl = Label(sefareshkala , bg = 'white' , width = 1150 , height = 676 , image = img31)
-        self.sefareshkala_lbl.place(x = 25 , y = 25)
-
-        self.e_search_codeMeli_sefaresh = Entry(sefareshkala, width = 20 , font = ('B Nazanin' , 10), bg = 'white', border = 0 , justify ='right')
-        self.e_search_codeMeli_sefaresh.place( x = 850, y = 224)
-
-        self.search_codeMeli_btn = Button(sefareshkala , bg = '#EEEEEE' , width = 65, height = 28 , image = img23 ,activebackground= '#EEEEEE', borderwidth = 0 , command= self.show_info_Karmand_sefaresh )
-        self.search_codeMeli_btn.bind('<Enter>',lambda event : self.hoverBtn(img23,'pics/Search-btn-hover.png'))
-        self.search_codeMeli_btn.bind('<Leave>',lambda event : self.hoverBtn(img23,'pics/Search-btn.png'))
-        self.search_codeMeli_btn.place(x = 770, y = 221)
-
-        self.e_search_codeKala_sefaresh = Entry(sefareshkala, width = 20 , font = ('B Nazanin' , 10), bg = 'white', border = 0 , justify ='right')
-        self.e_search_codeKala_sefaresh.place( x = 850, y = 381)
-
-        self.search_codeKala_btn_sefaresh = Button(sefareshkala , bg = '#EEEEEE' , width = 65, height = 28 , image = img28 ,activebackground= '#EEEEEE', borderwidth = 0 , command= self.show_info_KalaSefaresh )
-        self.search_codeKala_btn_sefaresh.bind('<Enter>',lambda event : self.hoverBtn(img28,'pics/search-btn-hover.png'))
-        self.search_codeKala_btn_sefaresh.bind('<Leave>',lambda event : self.hoverBtn(img28,'pics/search-btn.png'))
-        self.search_codeKala_btn_sefaresh.place(x = 770, y = 377)
-
-        self.namlbl_sefaresh = Label(sefareshkala , bg = '#EEEEEE', width = 13 , height = 1, font = ('Segoe UI' , 13, 'bold'), text = 'saxsaxsaxa' , fg = '#6D6D6D', justify = 'right')
-        self.namlbl_sefaresh.place(x = 389 , y = 140)
-
-        self.lastlbl_sefaresh = Label(sefareshkala , bg = '#EEEEEE', width = 12    , height = 1, font = ('Segoe UI' , 13, 'bold'), text = 'saxsaxsaxa' , fg = '#6D6D6D', justify = 'right')
-        self.lastlbl_sefaresh.place(x = 105 , y = 140)
-
-        self.codeMelilbl_sefaresh = Label(sefareshkala , bg = '#EEEEEE', width = 13, height = 1, font = ('Segoe UI' , 13, 'bold'), text = 'saxsaxsaxa' , fg = '#6D6D6D', justify = 'right')
-        self.codeMelilbl_sefaresh.place(x = 389 , y = 183)
-
-        self.genderlbl_sefaresh = Label(sefareshkala , bg = '#EEEEEE', width = 12, height = 1, font = ('Segoe UI' , 13, 'bold'), text = 'saxsaxsaxa' , fg = '#6D6D6D', justify = 'right')
-        self.genderlbl_sefaresh.place(x = 105, y = 183)
-#--------------------------------------------------------------------
-        self.namKalalbl_sefaresh = Label(sefareshkala , bg = '#EEEEEE', width = 12, height = 1, font = ('Segoe UI' , 13, 'bold'), text = 'saxsaxsaxa' , fg = '#6D6D6D', justify = 'right')
-        self.namKalalbl_sefaresh.place(x = 395, y = 267)
-
-        self.groupKalalbl_sefaresh = Label(sefareshkala , bg = '#EEEEEE', width = 12, height = 1, font = ('Segoe UI' , 13, 'bold'), text = 'saxsaxsaxa' , fg = '#6D6D6D', justify = 'right')
-        self.groupKalalbl_sefaresh.place(x = 110, y = 267)
-
-        self.codeKalalbl_sefaresh = Label(sefareshkala , bg = '#EEEEEE', width = 12, height = 1, font = ('Segoe UI' , 13, 'bold'), text = '' , fg = '#6D6D6D', justify = 'right')
-        self.codeKalalbl_sefaresh.place(x = 395, y = 310)
-
-        self.mojodilbl_sefaresh = Label(sefareshkala , bg = '#EEEEEE', width = 12, height = 1, font = ('Segoe UI' , 13, 'bold'), text = 'saxsaxsaxa' , fg = '#6D6D6D', justify = 'right')
-        self.mojodilbl_sefaresh.place(x = 110, y = 310)
-
-        self.noeKalalbl_sefaresh = Label(sefareshkala , bg = '#EEEEEE', width = 12, height = 1, font = ('Segoe UI' , 13, 'bold'), text = 'saxsaxsaxa' , fg = '#6D6D6D', justify = 'right')
-        self.noeKalalbl_sefaresh.place(x = 395, y = 351)
-
-        self.noqtelbl_sefaresh = Label(sefareshkala , bg = '#EEEEEE', width = 12, height = 1, font = ('Segoe UI' , 13, 'bold'), text = 'saxsaxsaxa' , fg = '#6D6D6D', justify = 'right')
-        self.noqtelbl_sefaresh.place(x = 110, y = 351)
-
-
-        self.e_GetNum_sefaresh = Entry(sefareshkala, width = 20 , font = ('B Nazanin' , 10), bg = 'white', border = 0 , justify ='right')
-        self.e_GetNum_sefaresh.place( x = 400, y = 396)
-
-        self.e_GetDate_sefaresh = DateEntry(sefareshkala, width = 17 , font = ('B Nazanin' , 11), bg = 'white', border = 0 ,background='#495057',sforeground='#DEE2E6', justify ='right')
-        self.e_GetDate_sefaresh.place( x = 130, y = 395)
-
-        self.show_tree_sefaresh = ttk.Treeview(sefareshkala ,  style="Mystyle.Treeview", height = 6)
-        self.show_tree_sefaresh.place(x = 145 , y = 450)
-
-        self.show_tree_sefaresh['columns'] = ('date','number','category','id','Type','Name','row')
-
-        self.show_tree_sefaresh.column('#0', width = 0  ,stretch = NO)
-        self.show_tree_sefaresh.column('row', width = 60 , anchor = CENTER , minwidth = 60 )
-        self.show_tree_sefaresh.column('id', width = 100 , anchor = CENTER , minwidth = 100 )
-        self.show_tree_sefaresh.column('Name', width = 150 , anchor = CENTER , minwidth = 150 )
-        self.show_tree_sefaresh.column('category' ,width = 150 , anchor = CENTER , minwidth = 150 )
-        self.show_tree_sefaresh.column('date' ,width = 156 , anchor = CENTER, minwidth = 156 )
-        self.show_tree_sefaresh.column('Type' ,width = 150 , anchor = CENTER, minwidth = 150  )
-        self.show_tree_sefaresh.column('number' ,width = 150 , anchor = CENTER, minwidth = 150  )
-
-        self.show_tree_sefaresh.heading('#0', text = ' ' , anchor = CENTER)
-        self.show_tree_sefaresh.heading('row', text = 'ردیف' , anchor = CENTER )
-        self.show_tree_sefaresh.heading('id', text = 'کد کالا' , anchor = CENTER )
-        self.show_tree_sefaresh.heading('Name', text = 'نام کالا' , anchor = CENTER )
-        self.show_tree_sefaresh.heading('category', text = 'گروه کالا' , anchor = CENTER)
-        self.show_tree_sefaresh.heading('date', text = 'تاریخ' , anchor = CENTER)
-        self.show_tree_sefaresh.heading('Type'   , text = ' نوع کالا' , anchor = CENTER )
-        self.show_tree_sefaresh.heading('number' , text = 'تعداد', anchor = CENTER  )
-        style.theme_use("clam")
-        style.configure("Mystyle.Treeview.Heading",
-                        background = '#A0A0A0',
-                        font=('Segoe UI', 15,'bold'), 
-                        relief = 'flat', bd=1
-                        ) 
-        style.map("Mystyle.Treeview.Heading",
-            background=[('active','#A0A0A0')])
+        self.codeKalalbl['text']=data[0][2]
+        self.groupKalalbl['text']=data[0][3]
+        self.NoeKalalbl['text']=data[0][1]
+        self.noqte = data[0][5]
         
-        style.configure("Mystyle.Treeview", highlightthickness=0, 
-                                bd=0, font=('Segoe UI', 11),
-                                background="#F8F8F8",
-                                foreground="black",
-                                rowheight = 25,
-                                fieldbackground="#F8F8F8",   
-                                )
-        style.map("Mystyle.Treeview",
-            background=[('selected', '#727272')])
-        self.show_tree_sefaresh.bind('<Button-1>', self.test)
-        self.show_tree_sefaresh.bind('<ButtonRelease-1>', self.test)
-
-        self.sefaresh_btn = Button(sefareshkala , bg = 'white' , width = 147 , height = 40 , image = img30 ,activebackground= '#ffffff', borderwidth = 0, command=self.AddSefaresh_to_sql )#
-        self.sefaresh_btn.place(x = 527 , y = 650) 
-        self.sefaresh_btn.bind('<Enter>',lambda event : self.hoverBtn(img30,'pics/sefaresh-btn-hover.png'))
-        self.sefaresh_btn.bind('<Leave>',lambda event : self.hoverBtn(img30,'pics/sefaresh-btn.png'))
-
-        self.mainPage_btn = Button(sefareshkala , bg = 'white' , width = 147 , height = 40 , image = img14 ,activebackground= '#ffffff', borderwidth = 0 , command = self.BackMenu)
-        self.mainPage_btn.place(x = 709 , y = 650) 
-        self.mainPage_btn.bind('<Enter>',lambda event : self.hoverBtn(img14,'pics/main-btn-hover.png'))
-        self.mainPage_btn.bind('<Leave>',lambda event : self.hoverBtn(img14,'pics/main-btn.png'))
-
-        self.sabtKhoroj_btn = Button(sefareshkala , bg = 'white' , width = 147 , height = 40 , image = img32 ,activebackground= '#ffffff', borderwidth = 0 , command = self.SabtKhoroj)
-        self.sabtKhoroj_btn.place(x = 354 , y = 650) 
-        self.sabtKhoroj_btn.bind('<Enter>',lambda event : self.hoverBtn(img32,'pics/khoroj-btn-hover.png'))
-        self.sabtKhoroj_btn.bind('<Leave>',lambda event : self.hoverBtn(img32,'pics/khoroj-btn.png'))
-
-     
-    def SabtKhoroj(self):
-        self.selected = self.show_tree_sefaresh.focus()
-        self.values = self.show_tree_sefaresh.item(self.selected , "values")
-        self.statusChanged = 'آماده تحویل'
-        delete_one = self.show_tree_sefaresh.selection()[0]
-        self.show_tree_sefaresh.delete(delete_one)
         con = sql.connect('mydb.db')
         cur = con.cursor()
-        cur.execute('''UPDATE DarKhastKharid SET status = '{}' WHERE code ='{}' '''.format(self.statusChanged, self.values[3]))
-        con.commit()
-        con.close()
+        cur.execute("SELECT photo FROM Kala WHERE code = '{}'".format(GetCodeKala))
+        self.image_data = cur.fetchone()[0]
+        self.product_img = Image.open(io.BytesIO(self.image_data))
+        self.product_img = self.product_img.resize((400, 100))
+        self.product_photo = ImageTk.PhotoImage(self.product_img)
+        self.show_img_Vorodi = Label(sabtvorod , image=self.product_photo, width = 100 , height= 95)
+        self.show_img_Vorodi.place(x = 177, y = 199 )
 
-        for item in self.show_tree_sefaresh.get_children():
-            self.show_tree_sefaresh.delete(item)
-
-        self.lst =[] 
-        self.data_to_Sefaresh()
-
-        self.e_nam_kala.delete(0, END)
-        self.e_code_kala.delete(0, END)
-        self.e_tozihat.delete(0, END)
-        self.e_noqte.delete(0, END)
-        self.e_noe_kala.set('انتخاب کنید')
-        self.e_group_kala.set('انتخاب کنید')
-        messagebox.showinfo('خروج از انبار', '!آیتم شما با موفقیت از انبار خارج شد')
+        
     def show_info_Karmand_sefaresh(self,event = None):
         codeMeliGetSefaresh = self.e_search_codeMeli_sefaresh.get()
         con = sql.connect('mydb.db')
@@ -1165,6 +1345,272 @@ class app:
             self.lst_sefaresh = []
             self.count1 += 1
 
+
+
+#----------------------------------------------------------------------------------    
+#    
+#-------------------------reqKalaPage and functoins---------------------------------------------------------       
+    def reqKalaPage(self):
+        reqkalapage.title('درخواست خرید')
+        reqkalapage.state('withdraw')
+        reqkalapage.geometry('1200x720+150+20')
+        reqkalapage.configure(bg = 'white')
+        self.reqkalapage_lbl = Label(reqkalapage , bg = 'white' , width = 1150 , height = 676 , image = img29)
+        self.reqkalapage_lbl.place(x = 25 , y = 25)
+        
+        self.show_tree_reqkalapage = ttk.Treeview(reqkalapage ,  style="Mystyle.Treeview", height = 16)
+        self.show_tree_reqkalapage.place(x = 145 , y = 200)
+
+        self.show_tree_reqkalapage['columns'] = ('noqte','number','category','id','Type','Name','row')
+
+        self.show_tree_reqkalapage.column('#0', width = 0  ,stretch = NO)
+        self.show_tree_reqkalapage.column('row', width = 60 , anchor = CENTER , minwidth = 60 )
+        self.show_tree_reqkalapage.column('id', width = 100 , anchor = CENTER , minwidth = 100 )
+        self.show_tree_reqkalapage.column('Name', width = 150 , anchor = CENTER , minwidth = 150 )
+        self.show_tree_reqkalapage.column('category' ,width = 150 , anchor = CENTER , minwidth = 150 )
+        self.show_tree_reqkalapage.column('noqte' ,width = 156 , anchor = CENTER, minwidth = 156 )
+        self.show_tree_reqkalapage.column('Type' ,width = 150 , anchor = CENTER, minwidth = 150  )
+        self.show_tree_reqkalapage.column('number' ,width = 150 , anchor = CENTER, minwidth = 150  )
+
+        self.show_tree_reqkalapage.heading('#0', text = ' ' , anchor = CENTER)
+        self.show_tree_reqkalapage.heading('row', text = 'ردیف' , anchor = CENTER )
+        self.show_tree_reqkalapage.heading('id', text = 'کد کالا' , anchor = CENTER )
+        self.show_tree_reqkalapage.heading('Name', text = 'نام کالا' , anchor = CENTER )
+        self.show_tree_reqkalapage.heading('category', text = 'گروه کالا' , anchor = CENTER)
+        self.show_tree_reqkalapage.heading('noqte', text = 'نقطه خرید' , anchor = CENTER)
+        self.show_tree_reqkalapage.heading('Type'   , text = ' نوع کالا' , anchor = CENTER )
+        self.show_tree_reqkalapage.heading('number' , text = 'تعداد', anchor = CENTER  )
+        style.theme_use("clam")
+        style.configure("Mystyle.Treeview.Heading",
+                        background = '#A0A0A0',
+                        font=('Segoe UI', 15,'bold'), 
+                        relief = 'flat', bd=1
+                        ) 
+        style.map("Mystyle.Treeview.Heading",
+            background=[('active','#A0A0A0')])
+        
+        style.configure("Mystyle.Treeview", highlightthickness=0, 
+                                bd=0, font=('Segoe UI', 11),
+                                background="#F8F8F8",
+                                foreground="black",
+                                rowheight = 25,
+                                fieldbackground="#F8F8F8",   
+                                )
+        style.map("Mystyle.Treeview",
+            background=[('selected', '#727272')])
+        self.show_tree_reqkalapage.bind('<Button-1>', self.test)
+        self.show_tree_reqkalapage.bind('<ButtonRelease-1>', self.test)
+        self.sefaresh_btn = Button(reqkalapage , bg = 'white' , width = 147 , height = 40 , image = img30 ,activebackground= '#ffffff', borderwidth = 0 , command= self.req_order)#
+        self.sefaresh_btn.place(x = 440 , y = 650) 
+        self.sefaresh_btn.bind('<Enter>',lambda event : self.hoverBtn(img30,'pics/sefaresh-btn-hover.png'))
+        self.sefaresh_btn.bind('<Leave>',lambda event : self.hoverBtn(img30,'pics/sefaresh-btn.png'))
+
+        self.mainPage_btn = Button(reqkalapage , bg = 'white' , width = 147 , height = 40 , image = img14 ,activebackground= '#ffffff', borderwidth = 0 , command = self.BackMenu)
+        self.mainPage_btn.place(x = 603 , y = 650) 
+        self.mainPage_btn.bind('<Enter>',lambda event : self.hoverBtn(img14,'pics/main-btn-hover.png'))
+        self.mainPage_btn.bind('<Leave>',lambda event : self.hoverBtn(img14,'pics/main-btn.png'))
+
+    def data_to_req_table(self) :
+        self.req_lst = []
+        for i in self.show_tree_reqkalapage.get_children():
+            self.show_tree_reqkalapage.delete(i)
+        self.req_count=0
+        self.con=sql.connect('mydb.db')
+        self.cur=self.con.cursor()
+        self.row=self.cur.execute('SELECT * FROM Kala')
+        for i in self.row :
+            self.req_lst.append(i)
+        for i in self.req_lst:
+            if int(i[5]) > int(i[7]) :
+                self.show_tree_reqkalapage.insert(parent='',index='end',iid=self.req_count,text='',
+                values=(i[5],i[7],i[3],i[2],i[1],i[0],str(self.req_count+1)))
+                self.req_count += 1
+    # def purchase_select(self, event = None) :
+    def req_order(self,event = None) :
+        self.purchase_selected = self.show_tree_reqkalapage.focus()
+        self.purchase_values = self.show_tree_reqkalapage.item(self.purchase_selected , "values")
+        sabtvorod.state("withdraw")
+        con = sql.connect('mydb.db')
+        cur = con.cursor()
+        self.import_product_data = cur.execute('SELECT * FROM Kala WHERE code="{}"'.format(self.purchase_values[3]))
+        self.import_product_data = list(self.import_product_data)
+        print(self.purchase_values[3])
+        self.minimum_number = int(self.import_product_data[0][5]) - int(self.import_product_data[0][7])
+        self.e_Get_num.insert(0,self.minimum_number)
+        # self.pr_code_ent.insert(0,self.req_values[4])
+        self.import_prduct_fill()
+        if sabtvorod.state != ('normal') :
+            reqkalapage.state('withdraw')
+            sabtvorod.state('normal')
+
+        con = sql.connect('mydb.db')
+        cur = con.cursor()
+        cur.execute("SELECT photo FROM Kala WHERE code = '{}'".format(self.purchase_values[3]))
+        self.image_data = cur.fetchone()[0]
+        self.product_img = Image.open(io.BytesIO(self.image_data))
+        self.product_photo = ImageTk.PhotoImage(self.product_img)
+        self.show_img_Vorodi = Label(sabtvorod , image=self.product_photo, width = 100 , height= 95)
+        self.show_img_Vorodi.place(x = 177, y = 199 )
+
+    def import_prduct_fill(self):
+        GetNumKala = self.e_Get_num.get()
+        GetCodeKala = self.purchase_values[3]
+        con = sql.connect('mydb.db')
+        cur = con.cursor()
+        data = cur.execute('SELECT * FROM Kala WHERE code="{}"'.format(GetCodeKala))
+        data = list(data)
+        print(data)
+        self.namKalalbl['text']= data[0][0]
+        self.codeKalalbl['text']= data[0][2]
+        self.groupKalalbl['text']= data[0][3]
+        self.NoeKalalbl['text']= data[0][1]
+        self.e_search_codeKala.insert(0,data[0][2])
+
+    def SefareshKalaPage(self):
+        sefareshkala.title('درخواست خروج')
+        sefareshkala.state('withdraw')
+        sefareshkala.geometry('1200x720+150+20')
+        sefareshkala.configure(bg = 'white')
+        self.sefareshkala_lbl = Label(sefareshkala , bg = 'white' , width = 1150 , height = 676 , image = img31)
+        self.sefareshkala_lbl.place(x = 25 , y = 25)
+
+        self.e_search_codeMeli_sefaresh = Entry(sefareshkala, width = 20 , font = ('B Nazanin' , 10), bg = 'white', border = 0 , justify ='right')
+        self.e_search_codeMeli_sefaresh.place( x = 850, y = 224)
+
+        self.search_codeMeli_btn = Button(sefareshkala , bg = '#EEEEEE' , width = 65, height = 28 , image = img23 ,activebackground= '#EEEEEE', borderwidth = 0 , command= self.show_info_Karmand_sefaresh )
+        self.search_codeMeli_btn.bind('<Enter>',lambda event : self.hoverBtn(img23,'pics/Search-btn-hover.png'))
+        self.search_codeMeli_btn.bind('<Leave>',lambda event : self.hoverBtn(img23,'pics/Search-btn.png'))
+        self.search_codeMeli_btn.place(x = 770, y = 221)
+
+        self.e_search_codeKala_sefaresh = Entry(sefareshkala, width = 20 , font = ('B Nazanin' , 10), bg = 'white', border = 0 , justify ='right')
+        self.e_search_codeKala_sefaresh.place( x = 850, y = 381)
+
+        self.search_codeKala_btn_sefaresh = Button(sefareshkala , bg = '#EEEEEE' , width = 65, height = 28 , image = img28 ,activebackground= '#EEEEEE', borderwidth = 0 , command= self.show_info_KalaSefaresh )
+        self.search_codeKala_btn_sefaresh.bind('<Enter>',lambda event : self.hoverBtn(img28,'pics/search-btn-hover.png'))
+        self.search_codeKala_btn_sefaresh.bind('<Leave>',lambda event : self.hoverBtn(img28,'pics/search-btn.png'))
+        self.search_codeKala_btn_sefaresh.place(x = 770, y = 377)
+
+        self.namlbl_sefaresh = Label(sefareshkala , bg = '#EEEEEE', width = 13 , height = 1, font = ('Segoe UI' , 13, 'bold'), text = '' , fg = '#6D6D6D', justify = 'right')
+        self.namlbl_sefaresh.place(x = 389 , y = 140)
+
+        self.lastlbl_sefaresh = Label(sefareshkala , bg = '#EEEEEE', width = 12    , height = 1, font = ('Segoe UI' , 13, 'bold'), text = '' , fg = '#6D6D6D', justify = 'right')
+        self.lastlbl_sefaresh.place(x = 105 , y = 140)
+
+        self.codeMelilbl_sefaresh = Label(sefareshkala , bg = '#EEEEEE', width = 13, height = 1, font = ('Segoe UI' , 13, 'bold'), text = '' , fg = '#6D6D6D', justify = 'right')
+        self.codeMelilbl_sefaresh.place(x = 389 , y = 183)
+
+        self.genderlbl_sefaresh = Label(sefareshkala , bg = '#EEEEEE', width = 12, height = 1, font = ('Segoe UI' , 13, 'bold'), text = '' , fg = '#6D6D6D', justify = 'right')
+        self.genderlbl_sefaresh.place(x = 105, y = 183)
+#--------------------------------------------------------------------
+        self.namKalalbl_sefaresh = Label(sefareshkala , bg = '#EEEEEE', width = 12, height = 1, font = ('Segoe UI' , 13, 'bold'), text = '' , fg = '#6D6D6D', justify = 'right')
+        self.namKalalbl_sefaresh.place(x = 395, y = 267)
+
+        self.groupKalalbl_sefaresh = Label(sefareshkala , bg = '#EEEEEE', width = 12, height = 1, font = ('Segoe UI' , 13, 'bold'), text = '' , fg = '#6D6D6D', justify = 'right')
+        self.groupKalalbl_sefaresh.place(x = 110, y = 267)
+
+        self.codeKalalbl_sefaresh = Label(sefareshkala , bg = '#EEEEEE', width = 12, height = 1, font = ('Segoe UI' , 13, 'bold'), text = '' , fg = '#6D6D6D', justify = 'right')
+        self.codeKalalbl_sefaresh.place(x = 395, y = 310)
+
+        self.mojodilbl_sefaresh = Label(sefareshkala , bg = '#EEEEEE', width = 12, height = 1, font = ('Segoe UI' , 13, 'bold'), text = '' , fg = '#6D6D6D', justify = 'right')
+        self.mojodilbl_sefaresh.place(x = 110, y = 310)
+
+        self.noeKalalbl_sefaresh = Label(sefareshkala , bg = '#EEEEEE', width = 12, height = 1, font = ('Segoe UI' , 13, 'bold'), text = '' , fg = '#6D6D6D', justify = 'right')
+        self.noeKalalbl_sefaresh.place(x = 395, y = 351)
+
+        self.noqtelbl_sefaresh = Label(sefareshkala , bg = '#EEEEEE', width = 12, height = 1, font = ('Segoe UI' , 13, 'bold'), text = '' , fg = '#6D6D6D', justify = 'right')
+        self.noqtelbl_sefaresh.place(x = 110, y = 351)
+
+
+        self.e_GetNum_sefaresh = Entry(sefareshkala, width = 20 , font = ('B Nazanin' , 10), bg = 'white', border = 0 , justify ='right')
+        self.e_GetNum_sefaresh.place( x = 400, y = 396)
+
+        self.e_GetDate_sefaresh = DateEntry(sefareshkala, width = 17 , font = ('B Nazanin' , 11), bg = 'white', border = 0 ,background='#495057',sforeground='#DEE2E6', justify ='right')
+        self.e_GetDate_sefaresh.place( x = 130, y = 395)
+
+        self.show_tree_sefaresh = ttk.Treeview(sefareshkala ,  style="Mystyle.Treeview", height = 6)
+        self.show_tree_sefaresh.place(x = 145 , y = 450)
+
+        self.show_tree_sefaresh['columns'] = ('date','number','category','id','Type','Name','row')
+
+        self.show_tree_sefaresh.column('#0', width = 0  ,stretch = NO)
+        self.show_tree_sefaresh.column('row', width = 60 , anchor = CENTER , minwidth = 60 )
+        self.show_tree_sefaresh.column('id', width = 100 , anchor = CENTER , minwidth = 100 )
+        self.show_tree_sefaresh.column('Name', width = 150 , anchor = CENTER , minwidth = 150 )
+        self.show_tree_sefaresh.column('category' ,width = 150 , anchor = CENTER , minwidth = 150 )
+        self.show_tree_sefaresh.column('date' ,width = 156 , anchor = CENTER, minwidth = 156 )
+        self.show_tree_sefaresh.column('Type' ,width = 150 , anchor = CENTER, minwidth = 150  )
+        self.show_tree_sefaresh.column('number' ,width = 150 , anchor = CENTER, minwidth = 150  )
+
+        self.show_tree_sefaresh.heading('#0', text = ' ' , anchor = CENTER)
+        self.show_tree_sefaresh.heading('row', text = 'ردیف' , anchor = CENTER )
+        self.show_tree_sefaresh.heading('id', text = 'کد کالا' , anchor = CENTER )
+        self.show_tree_sefaresh.heading('Name', text = 'نام کالا' , anchor = CENTER )
+        self.show_tree_sefaresh.heading('category', text = 'گروه کالا' , anchor = CENTER)
+        self.show_tree_sefaresh.heading('date', text = 'تاریخ' , anchor = CENTER)
+        self.show_tree_sefaresh.heading('Type'   , text = ' نوع کالا' , anchor = CENTER )
+        self.show_tree_sefaresh.heading('number' , text = 'تعداد', anchor = CENTER  )
+        style.theme_use("clam")
+        style.configure("Mystyle.Treeview.Heading",
+                        background = '#A0A0A0',
+                        font=('Segoe UI', 15,'bold'), 
+                        relief = 'flat', bd=1
+                        ) 
+        style.map("Mystyle.Treeview.Heading",
+            background=[('active','#A0A0A0')])
+        
+        style.configure("Mystyle.Treeview", highlightthickness=0, 
+                                bd=0, font=('Segoe UI', 11),
+                                background="#F8F8F8",
+                                foreground="black",
+                                rowheight = 25,
+                                fieldbackground="#F8F8F8",   
+                                )
+        style.map("Mystyle.Treeview",
+            background=[('selected', '#727272')])
+        self.show_tree_sefaresh.bind('<Button-1>', self.test)
+        self.show_tree_sefaresh.bind('<ButtonRelease-1>', self.test)
+
+        self.sefaresh_btn = Button(sefareshkala , bg = 'white' , width = 147 , height = 40 , image = img30 ,activebackground= '#ffffff', borderwidth = 0, command=self.AddSefaresh_to_sql )#
+        self.sefaresh_btn.place(x = 527 , y = 650) 
+        self.sefaresh_btn.bind('<Enter>',lambda event : self.hoverBtn(img30,'pics/sefaresh-btn-hover.png'))
+        self.sefaresh_btn.bind('<Leave>',lambda event : self.hoverBtn(img30,'pics/sefaresh-btn.png'))
+
+        self.mainPage_btn = Button(sefareshkala , bg = 'white' , width = 147 , height = 40 , image = img14 ,activebackground= '#ffffff', borderwidth = 0 , command = self.BackMenu)
+        self.mainPage_btn.place(x = 709 , y = 650) 
+        self.mainPage_btn.bind('<Enter>',lambda event : self.hoverBtn(img14,'pics/main-btn-hover.png'))
+        self.mainPage_btn.bind('<Leave>',lambda event : self.hoverBtn(img14,'pics/main-btn.png'))
+
+        self.sabtKhoroj_btn = Button(sefareshkala , bg = 'white' , width = 147 , height = 40 , image = img32 ,activebackground= '#ffffff', borderwidth = 0 , command = self.SabtKhoroj)
+        self.sabtKhoroj_btn.place(x = 354 , y = 650) 
+        self.sabtKhoroj_btn.bind('<Enter>',lambda event : self.hoverBtn(img32,'pics/khoroj-btn-hover.png'))
+        self.sabtKhoroj_btn.bind('<Leave>',lambda event : self.hoverBtn(img32,'pics/khoroj-btn.png'))
+
+     
+    def SabtKhoroj(self):
+        self.selected = self.show_tree_sefaresh.focus()
+        self.values = self.show_tree_sefaresh.item(self.selected , "values")
+        self.statusChanged = 'آماده تحویل'
+        delete_one = self.show_tree_sefaresh.selection()[0]
+        self.show_tree_sefaresh.delete(delete_one)
+        con = sql.connect('mydb.db')
+        cur = con.cursor()
+        cur.execute('''UPDATE DarKhastKharid SET status = '{}' WHERE code ='{}' '''.format(self.statusChanged, self.values[3]))
+        con.commit()
+        con.close()
+
+        for item in self.show_tree_sefaresh.get_children():
+            self.show_tree_sefaresh.delete(item)
+
+        self.lst =[] 
+        self.data_to_Sefaresh()
+
+        self.e_nam_kala.delete(0, END)
+        self.e_code_kala.delete(0, END)
+        self.e_tozihat.delete(0, END)
+        self.e_noqte.delete(0, END)
+        self.e_noe_kala.set('انتخاب کنید')
+        self.e_group_kala.set('انتخاب کنید')
+        messagebox.showinfo('خروج از انبار', '!آیتم شما به لیست انبار اضافه شد')
 
 
     def exportProductPage(self):
@@ -1301,9 +1747,88 @@ class app:
         self.cur.execute('''INSERT INTO History (namKala,typeKala,codeKala,goroKala,number,CodeSefaresh,dateSefaresh, namKarbar,lastKarbar , codeMeliKarbar , Gender, status , mojodi) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)''',data)
         self.con.commit()
         self.con.close()
-
+        messagebox.showinfo('ثبت خروج' ,' کالا از انبار خارج شد')
         # tedadDarkhast1 = int(tedadDarkhast)
-#------------------------historyPage-------------------------------------
+
+#--------------------------------------------------------------------
+
+    def update_record_number(self):
+        GetCodeKala = self.e_search_codeKala.get()
+        GetNumKala = self.e_Get_num.get()
+        GetCodeSefaresh = self.e_Get_codeSefaresh.get()
+        GetDateSefaresh = self.e_GetDate_sabtvorod.get()
+        self.con = sql.connect('mydb.db')
+        self.cur = self.con.cursor()
+        update_mojodi = self.cur.execute('SELECT mojodi FROM Kala WHERE code ="{}"'.format(GetCodeKala))
+        update_mojodi = list(update_mojodi)
+        new_mojodi = int(update_mojodi[0][0]) + int(GetNumKala)
+
+        command = ' UPDATE Kala SET mojodi = "{}", CodeSefaresh = "{}", dateSefaresh = "{}"   WHERE code="{}" '.format(new_mojodi,GetCodeSefaresh,GetDateSefaresh,GetCodeKala)
+        self.cur.execute(command)
+        self.con.commit()
+        self.con.close()
+        self.con = sql.connect('mydb.db')
+        self.cur = self.con.cursor()
+        row = self.cur.execute('''SELECT  * FROM Kala WHERE code = "{}"'''.format(GetCodeKala))
+        for i in row :
+            self.lst_vorodi.append(i)
+        for i in self.lst_vorodi:
+            self.show_tree_Vorodi.insert(parent='',index='end',text='',
+                                                                    values=(i[9],
+                                                                            i[5],
+                                                                            i[7],
+                                                                            i[3],
+                                                                            i[2],
+                                                                            i[1],
+                                                                            i[0],
+                                                                            i[8],
+                                                                            str(self.count2+1)))
+            self.lst_vorodi = []
+            self.count2 += 1
+        # con.commit()
+        self.con.close()
+
+        self.statusVorodi = 'کالا وارد شد'
+        self.con=sql.connect('mydb.db')
+        self.cur=self.con.cursor()
+        mojodi = self.cur.execute('SELECT mojodi FROM Kala WHERE code="{}"'.format(GetCodeKala))
+        mojodi = list(mojodi)
+        print(mojodi)
+        command='''CREATE TABLE IF NOT EXISTS History (     namKala TEXT,
+                                                            typeKala TEXT ,
+                                                            codeKala TEXT ,
+                                                            goroKala TEXT,
+                                                            number TEXT,
+                                                            CodeSefaresh TEXT,
+                                                            dateSefaresh TEXT,
+                                                            namKarbar TEXT,
+                                                            lastKarbar TEXT,
+                                                            codeMeliKarbar TEXT,
+                                                            Gender TEXT,
+                                                            status TEXT,
+                                                            mojodi TEXT)'''
+        self.cur.execute(command)
+        data = (self.namKalalbl['text'],self.NoeKalalbl['text'],self.codeKalalbl['text']
+        ,self.groupKalalbl['text'],GetNumKala,GetCodeSefaresh, GetDateSefaresh, self.namlbl['text'],self.lastNamelbl['text'],self.codeMelilbl['text'],self.genderlbl['text'], self.statusVorodi, mojodi[0][0])
+        self.cur.execute('''INSERT INTO History (namKala,typeKala,codeKala,goroKala,number,CodeSefaresh,dateSefaresh, namKarbar,lastKarbar , codeMeliKarbar , Gender, status , mojodi) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)''',data)
+        self.con.commit()
+        self.con.close()
+
+        self.namKalalbl['text']= ''
+        self.codeKalalbl['text']= ''
+        self.groupKalalbl['text']= ''
+        self.NoeKalalbl['text']= ''
+        self.namlbl['text']= ''
+        self.lastNamelbl['text']= ''
+        self.codeMelilbl['text']= ''
+        self.genderlbl['text']= ''
+        self.e_Get_num.delete(0 , END)
+        self.e_search_codeKala.delete(0, END)
+        self.e_search_codeMeli.delete(0, END)
+        self.e_Get_codeSefaresh.delete(0, END)
+        self.e_GetDate_sabtvorod.delete(0, END)
+
+#------------------------historyPage and functions--------------------------------
 
     def historyPage(self):
         history.title('ثبت خروج کالا')
@@ -1412,15 +1937,8 @@ class app:
                                                                             str(self.count3)))
             self.lst_history = []
             self.count3 += 1
-
-
-    # def getCodeKala(self):
-    #     self.selected = self.show_tree_history.focus()
-    #     self.values = self.show_tree_history.item(self.selected, "values")
-            
-    #----------------------historyPage-------------------------------------
    
-    #----------------------historyPage-------------------------------------
+    #----------------------qabzPage-------------------------------------
     def qabzPage(self):
         Qabz.title('صدور قبض')
         Qabz.state('withdraw')
@@ -1468,12 +1986,6 @@ class app:
         data = list(data)
         print(data)
 
-
-
-
-
-
-
         self.namKalaQabz['text']= data[0][0]
         self.codeKalaQabz['text']= data[0][2]
         self.codeSefareshQabz['text']= data[0][12]
@@ -1519,506 +2031,39 @@ class app:
         bar = FigureCanvasTkAgg(fig,self.frm)
         bar.get_tk_widget().pack(side = LEFT , fill = BOTH)
 
-#--------------------------------------------------------------------
-    def show_info_Karmand(self,event = None):
-        codeMeliGet = self.e_search_codeMeli.get()
-        con = sql.connect('mydb.db')
-        cur = con.cursor()
-        data = cur.execute('SELECT * FROM SabtKarmand WHERE codeMeli="{}"'.format(codeMeliGet))
-        data = list(data)
-        print(data)
-        self.namlbl['text']= data[0][0]
-        self.lastNamelbl['text']= data[0][1]
-        self.codeMelilbl['text']= data[0][2]
-        self.genderlbl['text']= data[0][3]
-        
-    def show_info_Kala(self,event = None):
-        GetCodeKala = self.e_search_codeKala.get()
-        con = sql.connect('mydb.db')
-        cur = con.cursor()
-        data = cur.execute('SELECT * FROM Kala WHERE code="{}"'.format(GetCodeKala))
-        data = list(data)
-        print(data)
-        self.namKalalbl['text']= data[0][0]
-        self.codeKalalbl['text']=data[0][2]
-        self.groupKalalbl['text']=data[0][3]
-        self.NoeKalalbl['text']=data[0][1]
-        self.noqte = data[0][5]
-        
-        con = sql.connect('mydb.db')
-        cur = con.cursor()
-        cur.execute("SELECT photo FROM Kala WHERE code = '{}'".format(GetCodeKala))
-        self.image_data = cur.fetchone()[0]
-        self.product_img = Image.open(io.BytesIO(self.image_data))
-        self.product_photo = ImageTk.PhotoImage(self.product_img)
-        self.show_img_Vorodi = Label(sabtvorod , image=self.product_photo, width = 100 , height= 95)
-        self.show_img_Vorodi.place(x = 177, y = 199 )
-
-    def update_record_number(self):
-        GetCodeKala = self.e_search_codeKala.get()
-        GetNumKala = self.e_Get_num.get()
-        GetCodeSefaresh = self.e_Get_codeSefaresh.get()
-        GetDateSefaresh = self.e_GetDate_sabtvorod.get()
-        self.con = sql.connect('mydb.db')
-        self.cur = self.con.cursor()
-        update_mojodi = self.cur.execute('SELECT mojodi FROM Kala WHERE code ="{}"'.format(GetCodeKala))
-        update_mojodi = list(update_mojodi)
-        new_mojodi = int(update_mojodi[0][0]) + int(GetNumKala)
-
-        command = ' UPDATE Kala SET mojodi = "{}", CodeSefaresh = "{}", dateSefaresh = "{}"   WHERE code="{}" '.format(new_mojodi,GetCodeSefaresh,GetDateSefaresh,GetCodeKala)
-        self.cur.execute(command)
-        self.con.commit()
-        self.con.close()
-        self.con = sql.connect('mydb.db')
-        self.cur = self.con.cursor()
-        row = self.cur.execute('''SELECT  * FROM Kala WHERE code = "{}"'''.format(GetCodeKala))
-        for i in row :
-            self.lst_vorodi.append(i)
-        for i in self.lst_vorodi:
-            self.show_tree_Vorodi.insert(parent='',index='end',text='',
-                                                                    values=(i[9],
-                                                                            i[5],
-                                                                            i[7],
-                                                                            i[3],
-                                                                            i[2],
-                                                                            i[1],
-                                                                            i[0],
-                                                                            i[8],
-                                                                            str(self.count2+1)))
-            self.lst_vorodi = []
-            self.count2 += 1
-        # con.commit()
-        self.con.close()
-
-        self.statusVorodi = 'کالا وارد شد'
-        self.con=sql.connect('mydb.db')
-        self.cur=self.con.cursor()
-        mojodi = self.cur.execute('SELECT mojodi FROM Kala WHERE code="{}"'.format(GetCodeKala))
-        mojodi = list(mojodi)
-        print(mojodi)
-        command='''CREATE TABLE IF NOT EXISTS History (     namKala TEXT,
-                                                            typeKala TEXT ,
-                                                            codeKala TEXT ,
-                                                            goroKala TEXT,
-                                                            number TEXT,
-                                                            CodeSefaresh TEXT,
-                                                            dateSefaresh TEXT,
-                                                            namKarbar TEXT,
-                                                            lastKarbar TEXT,
-                                                            codeMeliKarbar TEXT,
-                                                            Gender TEXT,
-                                                            status TEXT,
-                                                            mojodi TEXT)'''
-        self.cur.execute(command)
-        data = (self.namKalalbl['text'],self.NoeKalalbl['text'],self.codeKalalbl['text']
-        ,self.groupKalalbl['text'],GetNumKala,GetCodeSefaresh, GetDateSefaresh, self.namlbl['text'],self.lastNamelbl['text'],self.codeMelilbl['text'],self.genderlbl['text'], self.statusVorodi, mojodi[0][0])
-        self.cur.execute('''INSERT INTO History (namKala,typeKala,codeKala,goroKala,number,CodeSefaresh,dateSefaresh, namKarbar,lastKarbar , codeMeliKarbar , Gender, status , mojodi) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)''',data)
-        self.con.commit()
-        self.con.close()
-
-        self.namKalalbl['text']= ''
-        self.codeKalalbl['text']= ''
-        self.groupKalalbl['text']= ''
-        self.NoeKalalbl['text']= ''
-        self.namlbl['text']= ''
-        self.lastNamelbl['text']= ''
-        self.codeMelilbl['text']= ''
-        self.genderlbl['text']= ''
-        self.e_Get_num.delete(0 , END)
-        self.e_search_codeKala.delete(0, END)
-        self.e_search_codeMeli.delete(0, END)
-        self.e_Get_codeSefaresh.delete(0, END)
-        self.e_GetDate_sabtvorod.delete(0, END)
-#-------------------------add-product-Page-funcs--------------------
-
-    def update_record(self):
-        self.selected =  self.show_tree.focus()
-        self.show_tree.item(self.selected ,values = (self.e_nam_kala.get(),
-                                                        self.e_noe_kala.get(),
-                                                        self.e_code_kala.get(),
-                                                        self.e_group_kala.get(),
-                                                        self.e_tozihat.get(),
-                                                        self.e_noqte.get()))
-        self.e_nam_kala.delete(0, END)
-        self.e_noe_kala.delete(0, END)
-        self.e_code_kala.delete(0, END)
-        self.e_group_kala.delete(0, END)
-        self.e_tozihat.delete(0, END)
-        self.e_noqte.delete(0, END)
-
-    def sql_search(self,id1):
-        con = sql.connect('mydb.db')
-        cur = con.cursor()
-        row = cur.execute('SELECT * FROM kala WHERE code="{}"'.format(id1))
-        return list(row)
-
-    def show_info(self,event = None) :
-        self.e_noe_kala.set("یک گزینه را انتخاب کنید")
-        self.e_group_kala.set("یک گزینه را انتخاب کنید")
-        self.e_code_kala.delete(0,END)
-        self.e_nam_kala.delete(0,END)
-        self.e_noqte.delete(0,END)
-        self.e_tozihat.delete(0,END)
     
-        self.selected = self.show_tree.focus()
-        self.values = self.show_tree.item(self.selected , "values")
-
-        con = sql.connect('mydb.db')
-        cur = con.cursor()
-        cur.execute("SELECT photo FROM Kala WHERE code = '{}'".format(self.values[2]))
-        self.image_data = cur.fetchone()[0]
-        self.product_img = Image.open(io.BytesIO(self.image_data))
-        self.product_photo = ImageTk.PhotoImage(self.product_img)
-        self.show_image = Label(productpage , image=self.product_photo, width = 100 , height= 95)
-        self.show_image.place(x=125, y= 242)
-
-        self.valuelst = self.sql_search(self.values[2])
-        self.e_nam_kala.insert(0,self.valuelst[0][0])
-        self.e_noe_kala.set(self.valuelst[0][1])
-        self.e_code_kala.insert(0,self.valuelst[0][2])
-        self.e_group_kala.set(self.valuelst[0][3])
-        self.e_noqte.insert(0,self.valuelst[0][5])
-        self.e_tozihat.insert(0,self.valuelst[0][4])
-    def edit(self,event = None):
-        self.nam_kala = self.e_nam_kala.get()
-        self.noe_kala = self.e_noe_kala.get()
-        self.code_kala = self.e_code_kala.get()
-        self.group_kala = self.e_group_kala.get()
-        self.tozihat = self.e_tozihat.get()
-        self.noqteKharid = self.e_noqte.get()
-        
-        self.sql_update(self.values[2],self.nam_kala,self.noe_kala,self.code_kala,self.group_kala,self.tozihat,self.noqteKharid)
-
-        self.show_tree.item(self.selected ,values = (self.noqteKharid,self.group_kala,self.code_kala,self.noe_kala,self.nam_kala,self.values[5]))
-        messagebox.showinfo('ویرایش' , 'مشخصات با موفقیت ویرایش شدند')
-    def sql_update(self,id1,name1,noe_kala1,code1,group1,tozih1,noqte1):
-        con = sql.connect('mydb.db')
-        cur = con.cursor()
-
-        command = ' UPDATE kala SET code = "{}" , nam = "{}", type = "{}", goro = "{}", tozih = "{}",noqte = "{}" WHERE code="{}" '.format(code1,name1,noe_kala1,group1,tozih1,noqte1,id1)
-        cur.execute(command)
-        con.commit()
-
-        self.e_nam_kala.delete(0, END)
-        self.e_code_kala.delete(0, END)
-        self.e_tozihat.delete(0, END)
-        self.e_noqte.delete(0, END)
-        self.e_noe_kala.set('انتخاب کنید')
-        self.e_group_kala.set('انتخاب کنید')
-        
-    def Remove(self):
-        delete_one = self.show_tree.selection()[0]
-        self.show_tree.delete(delete_one)
-        con = sql.connect('mydb.db')
-        cur = con.cursor()
-        cur.execute('''DELETE FROM Kala WHERE code ='''+ self.e_code_kala.get())
-        con.commit()
-        con.close()
-        self.show_image['image'] = img17
-        for item in self.show_tree.get_children():
-            self.show_tree.delete(item)
-
-        self.lst =[] 
-        self.data_to_list()
-
-        self.e_nam_kala.delete(0, END)
-        self.e_code_kala.delete(0, END)
-        self.e_tozihat.delete(0, END)
-        self.e_noqte.delete(0, END)
-        self.e_noe_kala.set('انتخاب کنید')
-        self.e_group_kala.set('انتخاب کنید')
-        self.show_image['image'] = img17
-        messagebox.showinfo('حذف آیتم', '!آیتم شما با موفقیت حذف شد')
-
-    def Remove_all (self) :
-        for i in self.show_tree.get_children():
-            self.show_tree.delete(i)
-        con = sql.connect('mydb.db')
-        cur = con.cursor()
-        command = ''' DELETE FROM Kala '''
-        cur.execute(command)    
-        con.commit()
-        messagebox.showinfo('حذف آیتم', '!تمامی آیتم های شما با موفقیت حذف شد')
-        self.e_nam_kala.delete(0, END)
-        self.e_code_kala.delete(0, END)
-        self.e_tozihat.delete(0, END)
-        self.e_noqte.delete(0, END)
-        self.e_noe_kala.set('انتخاب کنید')
-        self.e_group_kala.set('انتخاب کنید')
-
-    def data_to_list(self,event = None):
-        self.lst = []
-        self.count = 0
-        for item in self.show_tree.get_children():
-            self.show_tree.delete(item)
-            print(item)
-        # self.e_nam_kala.delete(0,END)
-        # self.e_code_kala.delete(0,END)
-        # self.e_tozihat.delete(0,END)
-        # self.e_noqte.delete(0,END)
-        # self.e_search.delete(0,END)
-        # self.e_noe_kala.set("یک گزینه را انتخاب کنید")
-        # self.e_group_kala.set("یک گزینه را انتخاب کنید")
-        self.con = sql.connect('mydb.db')
-        self.cur = self.con.cursor()
-        row = self.cur.execute('''SELECT  * FROM Kala''')
-        for i in row :
-            self.lst.append(i)
-        for i in self.lst:
-            self.show_tree.insert(parent='',index='end',text='',
-                                 values=(i[5],i[3],i[2],i[1],i[0],str(self.count+1)))
-            self.count += 1
-
-
-    def AddKala_to_sql(self):
-        self.nam_kala = self.e_nam_kala.get()
-        self.noe_kala = self.e_noe_kala.get()
-        self.code_kala = self.e_code_kala.get()
-        self.group_kala = self.e_group_kala.get()
-        self.tozihat = self.e_tozihat.get()
-        self.noqteKharid = self.e_noqte.get()
-        self.photo_read = self.convert_to_binary_data(self.img_name)
-        self.numlist_product=len(self.show_tree.get_children())
-        self.show_tree.insert(parent = '',
-                             index = 'end',
-                             text = 'parent',
-                             values = (self.noqteKharid,
-                                        self.group_kala,
-                                        self.code_kala,
-                                        self.noe_kala,
-                                        self.nam_kala,
-                                        self.numlist_product+1))
-        self.e_nam_kala.delete(0, END)
-        self.e_code_kala.delete(0, END)
-        self.e_tozihat.delete(0, END)
-        self.e_noqte.delete(0, END)
-        self.e_noe_kala.set('انتخاب کنید')
-        self.e_group_kala.set('انتخاب کنید')
-        
-        self.con=sql.connect('mydb.db')
-        self.cur=self.con.cursor()
-        self.command='''CREATE TABLE IF NOT EXISTS Kala (   nam TEXT,
-                                                            type TEXT ,
-                                                            code TEXT ,
-                                                            goro TEXT,
-                                                            tozih TEXT,
-                                                            noqte TEXT,
-                                                            photo BLOB,
-                                                            mojodi TEXT,
-                                                            CodeSefaresh TEXT,
-                                                            dateSefaresh TEXT)'''
-        self.cur.execute(self.command)
-        self.data = (self.nam_kala,self.noe_kala,self.code_kala,self.group_kala,self.tozihat,self.noqteKharid, self.photo_read, 0, 0 , 0)
-        self.cur.execute('''INSERT INTO Kala (nam,type,code,goro,tozih,noqte,photo,mojodi,CodeSefaresh,dateSefaresh) VALUES (?,?,?,?,?,?,?,?,?,?)''',self.data)
-        self.con.commit()
-        img17['file'] = 'pics/resid.png'
-        self.e_nam_kala.focus()
-        self.data_to_list()
-        messagebox.showinfo('اضافه شد' , 'کالا به لیست انبار اضافه شد')
-
-    def search(self,event = None):
-        self.con=sql.connect('mydb.db')
-        self.cur=self.con.cursor()
-        self.search_get=self.e_search.get()
-        self.count=0
-        if self.search_get !='':
-            for i in self.show_tree.get_children():
-                self.show_tree.delete(i)
-            self.row=self.cur.execute('SELECT * FROM kala WHERE code="{}"'.format(self.search_get))
-            self.search_list=list(self.row)
-
-            self.show_tree.insert(parent='',index='end',iid=self.count,text='',
-                                values=(self.search_list[0][5],
-                                        self.search_list[0][3],
-                                        self.search_list[0][2],
-                                        self.search_list[0][1],
-                                        self.search_list[0][0],
-                                        str(self.count+1)))
-        else:
-            self.lst=[]
-            self.show_tree.delete('0')
-            self.data_to_list()
-            self.show_image['image'] = img17
-
-#-------------------------employee-Page-funcs--------------------
-    def Addemp_to_sql(self):
-        self.nam = self.e_nam.get()
-        self.family = self.e_family.get()
-        self.code_meli = self.e_code_meli.get()
-        self.jensiat = self.e_jensiat_combo.get()
-        self.position = self.e_position_combo.get()
-        self.photo_read_emp = self.convert_to_binary_data(self.img_name)
-
-        self.numlist=len(self.show_tree_employee.get_children())
-        
-        self.show_tree_employee.insert(parent = '',
-                             index = 'end',
-                             text = 'parent',
-                             values = (self.position,
-                                        self.jensiat,
-                                        self.code_meli,
-                                        self.family,
-                                        self.nam,
-                                        self.numlist+1))
-        self.e_nam.delete(0, END)
-        self.e_family.delete(0, END)
-        self.e_code_meli.delete(0, END)
-        self.e_jensiat_combo.set('انتخاب کنید')
-        self.e_position_combo.set('انتخاب کنید')
-        
-        self.con=sql.connect('mydb.db')
-        self.cur=self.con.cursor()
-        self.command='''CREATE TABLE IF NOT EXISTS SabtKarmand (nam TEXT,
-                                                            family TEXT ,
-                                                            codeMeli TEXT ,
-                                                            jensiat TEXT,
-                                                            position TEXT,
-                                                            photo BLOB)'''
-        self.cur.execute(self.command)
-        self.data_emp = (self.nam,self.family,self.code_meli,self.jensiat,self.position,self.photo_read_emp)
-        self.cur.execute('''INSERT INTO SabtKarmand (nam,family,codeMeli,jensiat,position,photo) VALUES (?,?,?,?,?,?)''',self.data_emp)
-        self.con.commit()
-        
-        img17['file'] = 'pics/resid.png'
-        self.e_nam.focus()
-
-
-
-
-    def search_emp(self,event = None):
-        self.con=sql.connect('mydb.db')
-        self.cur=self.con.cursor()
-        self.search_get_emp=self.e_search_employee.get()
-        self.count_emp=0
-        if self.search_get_emp != '':
-            for i in self.show_tree_employee.get_children():
-                self.show_tree_employee.delete(i)
-            self.row=self.cur.execute('SELECT * FROM SabtKarmand WHERE codeMeli="{}"'.format(self.search_get_emp))
-            self.search_list_emp=list(self.row)
-            
-            self.show_tree_employee.insert(parent='',index='end',iid=self.count_emp,text='',
-                                values=(self.search_list_emp[0][4],
-                                        self.search_list_emp[0][3],
-                                        self.search_list_emp[0][2],
-                                        self.search_list_emp[0][1],
-                                        self.search_list_emp[0][0],
-                                        str(self.count_emp+1)))
-        else:
-            self.lst_emp=[]
-            self.show_tree_employee.delete('0')
-            self.data_to_list_emp()
-    def Remove_emp(self):
-        delete_one = self.show_tree_employee.selection()[0]
-        self.show_tree_employee.delete(delete_one)
-        con = sql.connect('mydb.db')
-        cur = con.cursor()
-        cur.execute('''DELETE FROM SabtKarmand WHERE codeMeli ='''+ self.e_code_meli.get())
-        con.commit()
-        con.close()
-
-
-        for item in self.show_tree_employee.get_children():
-            self.show_tree_employee.delete(item)
-
-        self.lst_emp =[]
-        
-        self.data_to_list_emp()
-
-        self.e_nam.delete(0, END)
-        self.e_family.delete(0, END)
-        self.e_code_meli.delete(0, END)
-        self.e_jensiat_combo.set('انتخاب کنید')
-        self.e_position_combo.set('انتخاب کنید')
-        self.show_image_employee['image'] = img17
-        messagebox.showinfo('حذف آیتم', '!آیتم شما با موفقیت حذف شد')
-
-    def Remove_all_emp(self):
-        for i in self.show_tree_employee.get_children():
-            self.show_tree_employee.delete(i)
-        con = sql.connect('mydb.db')
-        cur = con.cursor()
-        command = ''' DELETE FROM SabtKarmand '''
-        cur.execute(command)    
-        con.commit()
-        messagebox.showinfo('حذف آیتم', '!تمامی آیتم های شما با موفقیت حذف شد')
-        self.e_nam.delete(0, END)
-        self.e_family.delete(0, END)
-        self.e_code_meli.delete(0, END)
-        self.e_jensiat_combo.set('انتخاب کنید')
-        self.e_position_combo.set('انتخاب کنید')
-        self.show_image_employee['image'] = img17
-        self.e_nam.focus()
-    def edit_emp(self):
-        self.nam = self.e_nam.get()
-        self.family = self.e_family.get()
-        self.code_meli = self.e_code_meli.get()
-        self.jensiat = self.e_jensiat_combo.get()
-        self.position = self.e_position_combo.get()
-        
-        self.sql_update_emp(self.values[2],self.nam,self.family,self.code_meli,self.jensiat,self.position)
-
-        self.show_tree_employee.item(self.selected ,values = (self.position,self.jensiat,self.code_meli,self.family,self.nam,self.values[5]))
-        messagebox.showinfo('ویرایش' , 'مشخصات با موفقیت ویرایش شدند')
-
-    def sql_update_emp(self,id1,name1,family1,code1,jensiat1,position1):
-        con = sql.connect('mydb.db')
-        cur = con.cursor()
-        command = ' UPDATE SabtKarmand SET codeMeli = "{}" , nam = "{}", family = "{}", jensiat = "{}", position = "{}" WHERE codeMeli ="{}" '.format(code1,name1,family1,jensiat1,position1,id1)
-        cur.execute(command)
-        con.commit()
-
-    def show_info_emp(self,event = None) :
-        self.e_nam.delete(0, END)
-        self.e_family.delete(0, END)
-        self.e_code_meli.delete(0, END)
-        self.e_jensiat_combo.set('انتخاب کنید')
-        self.e_position_combo.set('انتخاب کنید')
-    
-        self.selected = self.show_tree_employee.focus()
-        self.values = self.show_tree_employee.item(self.selected , "values")
-        # print(self.values[2])
-        self.valuelst = self.sql_search_emp(self.values[2])
-        self.e_nam.insert(0,self.valuelst[0][0])
-        self.e_family.insert(0,self.valuelst[0][1])
-        self.e_code_meli.insert(0,self.valuelst[0][2])
-        self.e_jensiat_combo.set(self.valuelst[0][3])
-        self.e_position_combo.set(self.valuelst[0][4])
-        # self.show_image_employee['image'] = self.photo_read_emp
-        con = sql.connect('mydb.db')
-        cur = con.cursor()
-        cur.execute("SELECT photo FROM SabtKarmand WHERE codeMeli = '{}'".format(self.values[2]))
-        self.image_data = cur.fetchone()[0]
-        self.product_img = Image.open(io.BytesIO(self.image_data))
-        self.product_photo = ImageTk.PhotoImage(self.product_img)
-        self.show_image_employee = Label(employeepage , image=self.product_photo, width = 100 , height= 95)
-        self.show_image_employee.place(x=139, y= 146)
-
-
-    def data_to_list_emp(self,event = None):
-        self.count_emp = 1
-        self.con = sql.connect('mydb.db')
-        self.cur = self.con.cursor()
-        row = self.cur.execute('''SELECT * FROM SabtKarmand''')
-        for i in row :
-            self.lst_emp.append(i)
-        for i in self.lst_emp:
-            self.show_tree_employee.insert(parent='',index='end',iid=self.count_emp,text='',
-                                 values=(i[4],i[3],i[2],i[1],i[0],str(self.count_emp)))
-            self.count_emp += 1
-    
-    def sql_search_emp(self,id1):
-        con = sql.connect('mydb.db')
-        cur = con.cursor()
-        row = cur.execute('SELECT * FROM SabtKarmand WHERE codeMeli="{}"'.format(id1))
-        return list(row)
-
     def hoverBtn(self,img,url):
         img['file'] = url
 
 #------------------Global-funcs----------------------
     def select_image(self,event = None) :
+
         self.img_name = filedialog.askopenfilename()
-        img17['file'] = self.img_name
+        # img17['file'] = self.img_name
+        self.product_img = Image.open(self.img_name)
+        self.product_img = self.product_img.resize((400, 100))
+        self.product_photo = ImageTk.PhotoImage(self.product_img)
+        self.show_image = Label(productpage , image=self.product_photo, width = 100 , height= 95)
+        self.show_image.place(x=125, y= 242)
+
+    def select_image_empolyee(self,event = None) :
+
+        self.img_name = filedialog.askopenfilename()
+        # img17['file'] = self.img_name
+        self.product_img = Image.open(self.img_name)
+        self.product_img = self.product_img.resize((400, 100))
+        self.product_photo = ImageTk.PhotoImage(self.product_img)
+        self.show_image_employee = Label(employeepage , image=self.product_photo, width = 100 , height= 95)
+        self.show_image_employee.place(x=139, y= 146)
+    # def select_image_Vorodi(self,event = None) :
+    #     self.img_name = filedialog.askopenfilename()
+    #     # img17['file'] = self.img_name
+    #     self.product_img = Image.open(self.img_name)
+    #     self.product_img = self.product_img.resize((400, 100))
+    #     self.product_photo = ImageTk.PhotoImage(self.product_img)
+    #     self.show_img_Vorodi = Label(sabtvorod , image=self.product_photo ,width = 100 , height= 95)
+    #     self.show_img_Vorodi.place(x = 177, y = 199 )
+#---------------------------------------------
 
     def convert_to_binary_data(self, filename):
         with open (filename , 'rb') as f:
@@ -2079,7 +2124,7 @@ class app:
             self.e_nam_kala.delete(0,END)
             self.e_noqte.delete(0,END)
             self.e_tozihat.delete(0,END)
-            self.show_image['image'] = img17
+            self.show_image['image'] = img42
         if  root.state != 'normal':
             root.state('normal')
             mojodipage.state('withdraw')
@@ -2091,7 +2136,7 @@ class app:
             self.e_code_meli.delete(0, END)
             self.e_jensiat_combo.set('انتخاب کنید')
             self.e_position_combo.set('انتخاب کنید')
-            self.show_image_employee['image'] = img17
+            self.show_image_employee['image'] = img42
         if root.state != 'normal':
             root.state('normal')
             sabtvorod.state('withdraw')
@@ -2108,7 +2153,7 @@ class app:
             self.groupKalalbl['text']= ''
             self.NoeKalalbl['text']= ''
             self.noqte =  ''
-            self.show_img_Vorodi['image'] = img17
+            self.show_img_Vorodi['image'] = img42
             self.e_search_codeMeli.focus()
         if root.state != 'normal':
             root.state('normal')

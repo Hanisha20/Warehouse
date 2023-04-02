@@ -8,6 +8,11 @@ from tkcalendar import Calendar, DateEntry
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  # important
+from tkinter import *
+from PIL import ImageTk, Image
+import io
+
+
 root = Tk()
 loginpage = Toplevel()
 registerpage = Toplevel()
@@ -20,6 +25,8 @@ sefareshkala = Toplevel()
 sabtKhoroj = Toplevel()
 history = Toplevel()
 # matplot = Toplevel()
+Qabz = Toplevel()
+# tarikhche = Toplevel()
 style = ttk.Style()
      
 #---------PagesBGs-Images---------------
@@ -34,7 +41,8 @@ img29 = PhotoImage(file = 'pics/reqPage.png')
 img31 = PhotoImage(file = 'pics/SefareshKalaPg.png')
 img33 = PhotoImage(file = 'pics/ExportKalaPg.png')
 img36 = PhotoImage(file ='pics/HistoryPg.png')
-img37 = PhotoImage(file = 'pics/MatplotPg.png')
+img37 = PhotoImage(file = 'pics/qabzPg.png')
+img38 = PhotoImage(file = 'pics/tarikhchePg.png')
 #---------Main-PageBtns-Images----------
 img4 = PhotoImage(file = 'pics/fish.png')
 img5 = PhotoImage(file = 'pics/darkhast.png')
@@ -43,6 +51,7 @@ img7 = PhotoImage(file = 'pics/resid.png')
 img8 = PhotoImage(file = 'pics/sabtKala.png')
 img9 = PhotoImage(file = 'pics/sabtKarbar.png')
 img35 = PhotoImage(file = 'pics/SabtKhorojBtn.png')
+img41 = PhotoImage(file = 'pics/HistoryBtn.png')
 #---------login-PageBtns-Images----------
 img10 = PhotoImage(file = 'pics/login-btn.png')
 img15 = PhotoImage(file = 'pics/cheshm-baste.png')
@@ -70,21 +79,27 @@ img30 = PhotoImage(file = 'pics/sefaresh-btn.png')
 img32 = PhotoImage(file ='pics/khoroj-btn.png')
 #---------DarKhast-PageBtns-Images----------
 img34 = PhotoImage(file = 'pics/export-btn.png')
-
+#---------History-PageBtns-Images----------
+img39  = PhotoImage(file = 'pics/qabz-btn.png')
+img40 = PhotoImage(file = 'pics/chart-btn.png')
 class app:
+    '''
+    Hani ShahabiZadeh
+    2023/04/2
+    age 18 
+    Advanced Python project
+    Version 1 Warehouse app
+    '''
     def __init__(self,event = None): 
         self.MainPage()
         self.loginPage()
         self.registerPage()
-        self.login()
-        self.register_sub()
         self.ProductPage()
-        self.mainPage()
         self.AddEmployeePage()
         self.mojodi_page()
         self.exportProductPage()
         self.historyPage()
-        self.matplotPage()
+        self.qabzPage()
         self.lst = []
         self.lst_emp = []
         self.lst_mojodi = []
@@ -96,138 +111,192 @@ class app:
         self.count1 = 0
         self.count2 = 0
         self.count3 = 1
-        self.data_to_list()
-        self.data_to_list_emp()
-        self.data_to_stock()
         self.sabtVorodPage()
         self.reqKalaPage()
         self.SefareshKalaPage()
-        self.data_to_req_table()
-        self.data_to_Sefaresh()
-        self.data_to_list_export()
-        # self.purchase_select()
+        self.checkRegisterTable()
     def MainPage(self, event = None) :
         root.geometry('1200x720+150+20')
         root.state('withdraw')
+        root.title('نرم افزار انبار داری')
         self.main_lbl = Label(root, width = 1184 , height = 709 , bg = 'white' , image = img2 )
 
         self.fishBtn = Button(root, width = 157 , height  = 62 , image = img4 , activebackground= '#EEEEEE', borderwidth = 0 , command = self.darKhastKhoroj)
-        self.fishBtn.place(x = 90 , y = 139)
-
-        self.sabtKhorojBtn = Button(root, width = 157 , height  = 62 , image = img35 , activebackground= '#EEEEEE', borderwidth = 0 , command = self.exportProductPopUp)
-        self.sabtKhorojBtn.place(x = 90 , y = 200)
+        self.fishBtn.place(x = 90 , y = 120)
 
         self.fishBtn.bind('<Enter>',lambda event : self.hoverBtn(img4,'pics/fish-hover.png'))
         self.fishBtn.bind('<Leave>',lambda event : self.hoverBtn(img4,'pics/fish.png'))
+
+        self.sabtKhorojBtn = Button(root, width = 157 , height  = 62 , image = img35 , activebackground= '#EEEEEE', borderwidth = 0 , command = self.exportProductPopUp)
+        self.sabtKhorojBtn.place(x = 626 , y = 190)
+
+        self.sabtKhorojBtn.bind('<Enter>',lambda event : self.hoverBtn(img35,'pics/SabtKhorojBtn-hover.png'))
+        self.sabtKhorojBtn.bind('<Leave>',lambda event : self.hoverBtn(img35,'pics/SabtKhorojBtn.png'))
         
+
         self.darkhastKharidBtn = Button(root, width = 157 , height  = 62 , image = img7 ,activebackground= '#EEEEEE', borderwidth = 0 , command = self.DarkhastKharid)
-        self.darkhastKharidBtn.place(x = 263 , y = 139)  
+        self.darkhastKharidBtn.place(x = 263 , y = 120)  
 
         self.darkhastKharidBtn.bind('<Enter>',lambda event : self.hoverBtn(img7,'pics/resid-hover.png'))
         self.darkhastKharidBtn.bind('<Leave>',lambda event : self.hoverBtn(img7,'pics/resid.png'))
 
 
         self.darkhastBtn = Button(root, width = 157 , height  = 62 , image = img5,activebackground= '#EEEEEE', borderwidth = 0 , command= self.sabtvorodKala)
-        self.darkhastBtn.place(x = 436 , y = 139)
+        self.darkhastBtn.place(x = 436 , y = 120)
 
         self.darkhastBtn.bind('<Enter>',lambda event : self.hoverBtn(img5,'pics/darkhast-hover.png'))
         self.darkhastBtn.bind('<Leave>',lambda event : self.hoverBtn(img5,'pics/darkhast.png'))
 
         self.mojodiBtn = Button(root, width = 157 , height  = 62 , image = img6 , activebackground= '#EEEEEE', borderwidth = 0, command = self.MojodiPage)
-        self.mojodiBtn.place(x = 609 , y = 139)
+        self.mojodiBtn.place(x = 609 , y = 120)
 
         self.mojodiBtn.bind('<Enter>',lambda event : self.hoverBtn(img6,'pics/mojodi-hover.png'))
         self.mojodiBtn.bind('<Leave>',lambda event : self.hoverBtn(img6,'pics/mojodi.png'))
 
         self.sbtKarbarBtn = Button(root, width = 157 , height  = 63 , image = img9,activebackground= '#EEEEEE', borderwidth = 0, command = self.sabtKarmandPage)
-        self.sbtKarbarBtn.place(x = 782 , y = 139)
+        self.sbtKarbarBtn.place(x = 782 , y = 120)
 
         self.sbtKarbarBtn.bind('<Enter>',lambda event : self.hoverBtn(img9,'pics/sabtKarbar-hover.png'))
         self.sbtKarbarBtn.bind('<Leave>',lambda event : self.hoverBtn(img9,'pics/sabtKarbar.png'))
 
         self.sbtKalaBtn = Button(root, width = 157 , height  = 62 , image = img8,activebackground= '#EEEEEE', borderwidth = 0 , command = self.sabtKalaPage )
-        self.sbtKalaBtn.place(x = 955 , y = 136)
+        self.sbtKalaBtn.place(x = 955 , y = 121)
 
         self.sbtKalaBtn.bind('<Enter>',lambda event : self.hoverBtn(img8,'pics/sabtKala-hover.png'))
         self.sbtKalaBtn.bind('<Leave>',lambda event : self.hoverBtn(img8,'pics/sabtKala.png'))
       
+        self.tarikhcheSefareshatBtn = Button(root, width = 190 , height  = 63 , image = img41 ,activebackground= '#EEEEEE', borderwidth = 0, command = self.historyPagePopUp )
+        self.tarikhcheSefareshatBtn.place(x = 419 , y = 190)
+        self.tarikhcheSefareshatBtn.bind('<Enter>',lambda event : self.hoverBtn(img41,'pics/HistoryBtn-hover.png'))
+        self.tarikhcheSefareshatBtn.bind('<Leave>',lambda event : self.hoverBtn(img41,'pics/HistoryBtn.png'))
 
         self.main_lbl.place(x = 5 , y = 0)
 
     def loginPage(self, event = None):
-        self.loginpage = loginpage
         loginpage.state('withdraw')
-        self.loginpage.geometry('852x588+250+20')
-        self.login_main_lbl = Label(self.loginpage , width = 852 , height = 588 , bg = 'white')
+        loginpage.title('ورود به پنل کاربری')
+        loginpage.geometry('852x588+250+20')
+        self.login_main_lbl = Label(loginpage , width = 852 , height = 588 , bg = 'white')
         self.login_main_lbl.place(x = 0 , y = 0)
-        self.login_lbl = Label(self.loginpage , width = 815 , height = 550 , bg = 'white' , image = img1 )
+        self.login_lbl = Label(loginpage , width = 815 , height = 550 , bg = 'white' , image = img1 )
         self.login_lbl.place(x = 15, y = 15)
 
-        self.username_ent = Entry(self.loginpage , width = 27 , font = ('B Nazanin' , 11), bg = 'white' ,border=0 )
+        self.username_ent = Entry(loginpage , width = 27 , font = ('B Nazanin' , 11), bg = 'white' ,border=0 )
         self.username_ent.place(x = 528 , y = 166)
         self.username_ent.focus()
 
         self.username_ent.bind('<Return>', lambda event : self.password_ent.focus())
 
-        self.password_ent = Entry(self.loginpage , show = '*', width = 27 , font = ('B Nazanin' , 11), bg = 'white', border=0 )
+        self.password_ent = Entry(loginpage , show = '*', width = 27 , font = ('B Nazanin' , 11), bg = 'white', border=0 )
         self.password_ent.place(x = 528 , y = 265)
 
         self.password_ent.bind('<Return>', lambda event : self.login_btn.focus())
         self.cheshm = Button(loginpage , width = 35, image = img15 , bg = '#ffffff' , activebackground='#ffffff' , borderwidth = 0 , command = self.hide)
         self.cheshm.place(x = 476, y = 260)
         self.cheshm.bind('<Button-1>',self.hide)
-    #     self.eye.bind('<ButtonRelease>',self.hide)
-        self.login_btn = Button(self.loginpage , bg = 'white' , width = 211 , height = 65 , image = img10 ,activebackground= '#ffffff', borderwidth = 0)
+        self.login_btn = Button(loginpage , bg = 'white' , width = 211 , height = 65 , image = img10 ,activebackground= '#ffffff', borderwidth = 0 , command= self.checkIdAndPass)
         self.login_btn.place( x = 528 , y = 378)
-
-        self.login_btn.bind('<Return>', self.login )
-
 
         self.login_btn.bind('<Enter>',lambda event : self.hoverBtn(img10,'pics/login-btn-hover.png'))
         self.login_btn.bind('<Leave>',lambda event : self.hoverBtn(img10,'pics/login-btn.png'))
 
+
+    def checkIdAndPass(self):
+        con = sql.connect('mydb.db')
+        cur = con.cursor()
+        row = cur.execute('SELECT * FROM Register')
+        lst = list(row)
+        if self.username_ent.get() == lst[0][0] and self.password_ent.get() == lst[0][2] :
+            loginpage.state('withdrawn')
+            root.state('normal')
+        else :
+            messagebox.showerror('error','مجددا تلاش کنید. نام کاربری یا رمز عبور ثبت نشده است')
+
     def registerPage(self, event = None):
         self.registerpage = registerpage
+        registerpage.title('ثبتنام')
         self.registerpage.state('withdraw')
+
         self.registerpage.geometry('852x588+250+20')
         self.register_lbl = Label(self.registerpage , width = 815 , height = 550 , bg = 'white' , image = img3 )
         self.register_lbl.place(x = 15, y = 15)
 
-        self.name_ent = Entry(self.registerpage , width = 25 , font = ('B Nazanin' , 11), bg = 'white', border = 0 )
+        self.name_ent = Entry(self.registerpage , width = 25 , font = ('B Nazanin' , 11), bg = 'white', border = 0, justify= 'right' )
         self.name_ent.place(x = 602, y = 180)
         self.name_ent.focus()
         self.name_ent.bind('<Return>', lambda event : self.last_ent.focus())
 
 
-        self.last_ent = Entry(self.registerpage , width = 25 , font = ('B Nazanin' , 11), bg = 'white', border = 0 )
+        self.last_ent = Entry(self.registerpage , width = 25 , font = ('B Nazanin' , 11), bg = 'white', border = 0, justify= 'right' )
         self.last_ent.place(x = 380, y = 180)
         self.last_ent.bind('<Return>', lambda event : self.email_ent.focus())
         
 
-        self.email_ent = Entry(self.registerpage , width = 41 , font = ('B Nazanin' , 11), bg = 'white', border = 0 )
+        self.email_ent = Entry(self.registerpage , width = 41 , font = ('B Nazanin' , 11), bg = 'white', border = 0, justify= 'right' )
         self.email_ent.place(x = 380, y = 251)
         self.email_ent.bind('<Return>', lambda event : self.pass_ent.focus())
 
-        self.pass_ent = Entry(self.registerpage , width = 25 , font = ('B Nazanin' , 11), bg = 'white', border = 0 )
+        self.pass_ent = Entry(self.registerpage , width = 25 , font = ('B Nazanin' , 11), bg = 'white', border = 0, justify= 'right' )
         self.pass_ent.place(x = 605, y = 347)
         self.pass_ent.bind('<Return>', lambda event : self.re_pass_ent.focus())
 
 
-        self.re_pass_ent = Entry(self.registerpage , width = 25 , font = ('B Nazanin' , 11), bg = 'white', border = 0 )
+        self.re_pass_ent = Entry(self.registerpage , width = 25 , font = ('B Nazanin' , 11), bg = 'white', border = 0, justify= 'right' )
         self.re_pass_ent.place(x = 376, y = 347)
 
         self.re_pass_ent.bind('<Return>', lambda event : self.register_btn.focus())
 
 
-        self.register_btn = Button(self.registerpage , bg = 'white' , width = 211 , height = 65 , image = img11 ,activebackground= '#ffffff', borderwidth = 0)
+        self.register_btn = Button(self.registerpage , bg = 'white' , width = 211 , height = 65 , image = img11 ,activebackground= '#ffffff', borderwidth = 0 , command= self.TableRegister)
         self.register_btn.place( x = 487 , y = 442)
         self.register_btn.bind('<Enter>',lambda event : self.hoverBtn(img11,'pics/register-btn-hover.png'))
         self.register_btn.bind('<Leave>',lambda event : self.hoverBtn(img11,'pics/register-btn.png'))
 
-        self.register_btn.bind('<Return>', self.register_sub)
+        # self.register_btn.bind('<Return>', self.register_sub)
+
+
+    def TableRegister(self):
+        self.con=sql.connect('mydb.db')
+        self.cur=self.con.cursor()
+        self.command='''CREATE TABLE IF NOT EXISTS Register (nam TEXT,
+                                                             lastName TEXT,
+                                                             password TEXT,
+                                                             repassword TEXT, 
+                                                             email TEXT)'''
+        self.cur.execute(self.command)
+
+        self.data = (self.name_ent.get(),
+                    self.last_ent.get(),
+                    self.pass_ent.get(),
+                    self.re_pass_ent.get(),
+                    self.email_ent.get())
+        self.cur.execute('''INSERT INTO Register (nam,lastName,password,repassword,email) VALUES (?,?,?,?,?)''',self.data)
+        self.con.commit()
+        self.con.close()
+        messagebox.showinfo('ثبتنام', '!مشخصات شما با موفقیت ثبت شد')
+
+    def checkRegisterTable(self):
+        self.con = sql.connect('mydb.db')
+        self.cur = self.con.cursor()
+        self.cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        self.tables = self.cur.fetchall()
+        if len(self.tables) == 0:
+            registerpage.state('normal')
+            print('registerpage')
+        else:
+            self.loginState()
+            print('loginpage')
+          
+        self.con.close()
+
+    def loginState(self):
+        loginpage.state('normal')
+        
+
 
     def ProductPage(self, event = None) :
         self.productpage = productpage
+        productpage.title('ثبت کالا')
         productpage.geometry('1200x720+150+20')
         productpage.state('withdraw')
         self.product_main_lbl = Label(productpage , bg = 'white' , width = 1200, height = 720 )
@@ -313,7 +382,7 @@ class app:
         self.update_sub_btn.bind('<Enter>',lambda event : self.hoverBtn(img22,'pics/sub-update-hover.png'))
         self.update_sub_btn.bind('<Leave>',lambda event : self.hoverBtn(img22,'pics/sub-update.png'))
 
-        self.show_image = Label(productpage, image = img17 , relief="flat",width = 100 , height= 95, bg = 'black')
+        self.show_image = Label(productpage, image = img17 , relief="flat", width = 100 , height= 95)
         self.show_image.place(x=125, y= 242)
 
         self.show_tree = ttk.Treeview(productpage ,  style="mystyle.Treeview", height = 6)
@@ -356,6 +425,7 @@ class app:
     
     def AddEmployeePage(self, event = None):
         self.employeepage = employeepage
+        employeepage.title('ثبت کارمند')
         employeepage.geometry('1200x720+150+20')
         employeepage.state('withdraw')
         self.employee_main_lbl = Label(employeepage , bg = 'white' , width = 1200, height = 720 )
@@ -472,6 +542,8 @@ class app:
         
     def mojodi_page(self):
         self.mojodipage = mojodipage
+        mojodipage.title('موجودی کالاها')
+
         mojodipage.geometry('1200x720+150+20')
         mojodipage.state('withdraw')
         self.mojodipage_main_lbl = Label(mojodipage , bg = 'white' , width = 1200, height = 720 )
@@ -544,6 +616,9 @@ class app:
         self.show_tree_mojodipage.bind('<Button-1>', self.test)
         self.show_tree_mojodipage.bind('<ButtonRelease-1>', self.test)
     def data_to_stock(self,event = None):
+        self.lst_mojodi = []
+        for item in self.show_tree_mojodipage.get_children():
+            self.show_tree_mojodipage.delete(item)
         self.count = 0
         self.con = sql.connect('mydb.db')
         self.cur = self.con.cursor()
@@ -604,8 +679,9 @@ class app:
             self.show_tree_mojodipage.delete('0')
             self.data_to_stock()
 
-    def sabtVorodPage(self):
+    def sabtVorodPage(self): 
         sabtvorod.geometry('1200x720+150+20')
+        sabtvorod.title('ثبت ورود کالا')
         sabtvorod.state('withdraw')
         self.sabtvorod_main_lbl = Label(sabtvorod , bg = 'white' , width = 1200, height = 720 )
         self.sabtvorod_main_lbl.place( x = 0 , y = 0)
@@ -722,6 +798,7 @@ class app:
             background=[('selected', '#727272')])
 #----------------------------------------------------------------------------------       
     def reqKalaPage(self):
+        reqkalapage.title('درخواست خرید')
         reqkalapage.state('withdraw')
         reqkalapage.geometry('1200x720+150+20')
         reqkalapage.configure(bg = 'white')
@@ -782,6 +859,8 @@ class app:
 
     def data_to_req_table(self) :
         self.req_lst = []
+        for i in self.show_tree_reqkalapage.get_children():
+            self.show_tree_reqkalapage.delete(i)
         self.req_count=0
         self.con=sql.connect('mydb.db')
         self.cur=self.con.cursor()
@@ -810,6 +889,17 @@ class app:
         if sabtvorod.state != ('normal') :
             reqkalapage.state('withdraw')
             sabtvorod.state('normal')
+
+        con = sql.connect('mydb.db')
+        cur = con.cursor()
+        cur.execute("SELECT photo FROM Kala WHERE code = '{}'".format(self.purchase_values[3]))
+        self.image_data = cur.fetchone()[0]
+        self.product_img = Image.open(io.BytesIO(self.image_data))
+        self.product_photo = ImageTk.PhotoImage(self.product_img)
+        self.show_img_Vorodi = Label(sabtvorod , image=self.product_photo, width = 100 , height= 95)
+        self.show_img_Vorodi.place(x = 177, y = 199 )
+
+
     def import_prduct_fill(self):
         GetNumKala = self.e_Get_num.get()
         GetCodeKala = self.purchase_values[3]
@@ -825,6 +915,7 @@ class app:
         self.e_search_codeKala.insert(0,data[0][2])
 
     def SefareshKalaPage(self):
+        sefareshkala.title('درخواست خروج')
         sefareshkala.state('withdraw')
         sefareshkala.geometry('1200x720+150+20')
         sefareshkala.configure(bg = 'white')
@@ -967,7 +1058,7 @@ class app:
         self.e_noqte.delete(0, END)
         self.e_noe_kala.set('انتخاب کنید')
         self.e_group_kala.set('انتخاب کنید')
-        messagebox.showinfo('حذف آیتم', '!آیتم شما با موفقیت حذف شد')
+        messagebox.showinfo('خروج از انبار', '!آیتم شما با موفقیت از انبار خارج شد')
     def show_info_Karmand_sefaresh(self,event = None):
         codeMeliGetSefaresh = self.e_search_codeMeli_sefaresh.get()
         con = sql.connect('mydb.db')
@@ -1077,6 +1168,7 @@ class app:
 
 
     def exportProductPage(self):
+        sabtKhoroj.title('ثبت خروج کالا')
         sabtKhoroj.state('withdraw')
         sabtKhoroj.geometry('1200x720+150+20')
         sabtKhoroj.configure(bg = 'white')
@@ -1137,6 +1229,9 @@ class app:
         self.mainPage_btn.bind('<Enter>',lambda event : self.hoverBtn(img14,'pics/main-btn-hover.png'))
         self.mainPage_btn.bind('<Leave>',lambda event : self.hoverBtn(img14,'pics/main-btn.png'))
     def data_to_list_export(self):
+        self.lst_export = []
+        for i in self.show_tree_export.get_children():
+            self.show_tree_export.delete(i)
         self.status_ex = 'آماده تحویل'
         self.count1 = 1
         self.con = sql.connect('mydb.db')
@@ -1175,17 +1270,65 @@ class app:
         self.show_tree_export.delete(delete_one)
         self.cur.execute('''UPDATE DarKhastKharid SET status = '{}' WHERE code = '{}' '''.format(self.status_changed,self.values[3]))
         self.con.commit()
+        
+        self.con=sql.connect('mydb.db')
+        self.cur=self.con.cursor()
+        detail = self.cur.execute('SELECT * FROM DarKhastKharid WHERE code="{}"'.format(self.values[3]))
+        detail = list(detail)
+        print(detail)
+
+        self.statusVorodi = 'کالا خارج شده'
+        self.con=sql.connect('mydb.db')
+        self.cur=self.con.cursor()
+        mojodi = self.cur.execute('SELECT mojodi FROM Kala WHERE code="{}"'.format(self.values[3]))
+        mojodi = list(mojodi)
+        print(mojodi)
+        command='''CREATE TABLE IF NOT EXISTS History (     namKala TEXT,
+                                                            typeKala TEXT ,
+                                                            codeKala TEXT ,
+                                                            goroKala TEXT,
+                                                            number TEXT,
+                                                            CodeSefaresh TEXT,
+                                                            dateSefaresh TEXT,
+                                                            namKarbar TEXT,
+                                                            lastKarbar TEXT,
+                                                            codeMeliKarbar TEXT,
+                                                            Gender TEXT,
+                                                            status TEXT,
+                                                            mojodi TEXT)'''
+        self.cur.execute(command)
+        data = (detail[0][0],detail[0][1],detail[0][2],detail[0][3],detail[0][5],detail[0][12], detail[0][11], detail[0][6],detail[0][8],detail[0][7],detail[0][9], self.statusVorodi, mojodi[0][0])
+        self.cur.execute('''INSERT INTO History (namKala,typeKala,codeKala,goroKala,number,CodeSefaresh,dateSefaresh, namKarbar,lastKarbar , codeMeliKarbar , Gender, status , mojodi) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)''',data)
+        self.con.commit()
+        self.con.close()
 
         # tedadDarkhast1 = int(tedadDarkhast)
 #------------------------historyPage-------------------------------------
+
     def historyPage(self):
+        history.title('ثبت خروج کالا')
         history.state('withdraw')
         history.geometry('1200x720+150+20')
         history.configure(bg = 'white')
         self.history_lbl = Label(history , bg = 'white' , width = 1150 , height = 676 , image = img36)
-        self.history_lbl.place(x = 25 , y = 25)
+        self.history_lbl.place(x = 25 , y =25)
 
-        
+        self.openBill = Button(history, width = 157 , bg = 'white', height  = 40 , image = img39 , activebackground= '#ffffff', borderwidth = 0 , command = self.openQabzPage)
+        self.openBill.place(x = 353 , y = 640)
+        self.openBill.bind('<Enter>',lambda event : self.hoverBtn(img39,'pics/qabz-btn-hover.png'))
+        self.openBill.bind('<Leave>',lambda event : self.hoverBtn(img39,'pics/qabz-btn.png'))
+
+        self.openChart = Button(history, width = 157 , bg = 'white', height  = 40 , image = img40 , activebackground= '#ffffff', borderwidth = 0 , command = self.matplotPage)
+        self.openChart.place(x = 526 , y = 640)
+        self.openChart.bind('<Enter>',lambda event : self.hoverBtn(img40,'pics/chart-btn-hover.png'))
+        self.openChart.bind('<Leave>',lambda event : self.hoverBtn(img40,'pics/chart-btn.png'))
+
+
+        self.Menu_historyPage = Button(history, bg = 'white' , width = 147 , height = 40 , image = img14 ,activebackground= '#ffffff', borderwidth = 0 , command = self.BackMenu)
+        self.Menu_historyPage.place(x = 699 , y = 640)
+        self.Menu_historyPage.bind('<Enter>',lambda event : self.hoverBtn(img14,'pics/main-btn-hover.png'))
+        self.Menu_historyPage.bind('<Leave>',lambda event : self.hoverBtn(img14,'pics/main-btn.png'))
+
         self.show_tree_history = ttk.Treeview(history ,  style="MystyleHistory.Treeview", height = 19)
         self.show_tree_history.place(x = 39, y = 100)
 
@@ -1238,9 +1381,13 @@ class app:
                                 )
         style.map("MystyleHistory.Treeview",
             background=[('selected', '#727272')])
-        self.show_tree_history.bind('<Button-1>', self.test)
-        self.show_tree_history.bind('<ButtonRelease-1>', self.test)
-    
+        self.show_tree_history.bind('<Button-1>', self.selectItemForMatplotlib)
+        self.show_tree_history.bind('<ButtonRelease-1>', self.selectItemForMatplotlib)
+
+    def data_to_list_history(self):
+        self.lst_history = []
+        for i in self.show_tree_history.get_children():
+            self.show_tree_history.delete(i)
         self.count3 = 1
         self.con = sql.connect('mydb.db')
         self.cur = self.con.cursor()
@@ -1266,37 +1413,112 @@ class app:
             self.lst_history = []
             self.count3 += 1
 
+
+    # def getCodeKala(self):
+    #     self.selected = self.show_tree_history.focus()
+    #     self.values = self.show_tree_history.item(self.selected, "values")
+            
     #----------------------historyPage-------------------------------------
-    def matplotPage(self):
-        # matplot.state('normal')
-        # # matplot.geometry('750x488+380+120')
-        # matplot.title('Matplot')
-        # # matplot.configure(bg = 'white')
-        # # self.matplot_lbl = Label(matplot , bg = 'white' , width = 712 , height = 458 , image = img37)
-        # # self.matplot_lbl.place(x = 19 , y = 15)
+   
+    #----------------------historyPage-------------------------------------
+    def qabzPage(self):
+        Qabz.title('صدور قبض')
+        Qabz.state('withdraw')
+        Qabz.geometry('1200x720+300+150')
+        Qabz.configure(bg = 'white')
+        self.Qabz_lbl = Label(Qabz , bg = 'white' , width = 1150 , height = 676 , image = img37)
+        self.Qabz_lbl.place(x = 25 , y = 25)
 
-        # self.con = sql.connect('mydb.db')
-        # # self.cur = self.con.cursor(df)
-        # df = pd.read_sql_query("SELECT date FROM DarKhastKharid", self.con)
-        # df1 = pd.read_sql_query("SELECT mojodi FROM Kala", self.con)
+        self.namKalaQabz = Label(Qabz , bg = 'white', width = 16, height = 1, font = ('Segoe UI' , 13, 'bold'), text = '' , fg = '#6D6D6D', justify = 'right')
+        self.namKalaQabz.place(x = 800, y = 202)
 
-        # plt.plot()
-        # plt.xlabel('تاریخ')
-        # plt.ylabel('تعداد')
-        # plt.show()
-        # plt.ioff()
-        # self.con.close()
+        self.codeKalaQabz = Label(Qabz , bg = 'white', width = 16, height = 1, font = ('Segoe UI' , 13, 'bold'), text = '' , fg = '#6D6D6D', justify = 'right')
+        self.codeKalaQabz.place(x =  800, y = 266)
 
-        arr = np.random.randn(100)
-        plt.plot(arr, color = 'b' ,
+        self.codeSefareshQabz = Label(Qabz , bg = 'white', width = 16, height = 1, font = ('Segoe UI' , 13, 'bold'), text = '' , fg = '#6D6D6D', justify = 'right')
+        self.codeSefareshQabz.place(x =  800, y = 335)
+
+        self.statusQabz = Label(Qabz , bg = 'white', width = 16, height = 1, font = ('Segoe UI' , 13, 'bold'), text = '' , fg = '#6D6D6D', justify = 'right')
+        self.statusQabz.place(x =  800, y = 400)
+
+        self.namKarbarQabz = Label(Qabz , bg = 'white', width = 16, height = 1, font = ('Segoe UI' , 13, 'bold'), text = '' , fg = '#6D6D6D', justify = 'right')
+        self.namKarbarQabz.place(x = 200, y = 202)
+
+        self.codeMeliQabz = Label(Qabz , bg = 'white', width = 16, height = 1, font = ('Segoe UI' , 13, 'bold'), text = '' , fg = '#6D6D6D', justify = 'right')
+        self.codeMeliQabz.place(x = 200, y = 266)
+
+        self.numberQabz = Label(Qabz , bg = 'white', width = 16, height = 1, font = ('Segoe UI' , 13, 'bold'), text = '' , fg = '#6D6D6D', justify = 'right')
+        self.numberQabz.place(x = 200, y = 335)
+
+        self.DateQabz = Label(Qabz , bg = 'white', width = 16, height = 1, font = ('Segoe UI' , 13, 'bold'), text = '' , fg = '#6D6D6D', justify = 'right')
+        self.DateQabz.place(x = 200, y = 400)
+
+        self.Menu_QabzPage = Button(Qabz, bg = 'white' , width = 147 , height = 40 , image = img14 ,activebackground= '#ffffff', borderwidth = 0 , command = self.BackMenu)
+        self.Menu_QabzPage.place(x = 527 , y = 640)
+
+    def openQabzPage(self):
+        Qabz.state('normal')
+        Qabz.geometry('1200x720+150+20')
+        history.state('withdraw')
+        self.selected = self.show_tree_history.focus()
+        self.values = self.show_tree_history.item(self.selected , "values")
+        con = sql.connect('mydb.db')
+        cur = con.cursor()
+        data = cur.execute('SELECT * FROM DarKhastKharid WHERE CodeSefaresh="{}"'.format(self.values[11]))
+        data = list(data)
+        print(data)
+
+
+
+
+
+
+
+        self.namKalaQabz['text']= data[0][0]
+        self.codeKalaQabz['text']= data[0][2]
+        self.codeSefareshQabz['text']= data[0][12]
+        self.namKarbarQabz['text']= data[0][6]
+        self.codeMeliQabz['text'] = data[0][7]
+        self.numberQabz['text'] = data[0][5]
+        self.statusQabz['text'] = data[0][10]
+        self.DateQabz['text'] = data[0][11]        
+    #----------------------matplotlibPage-------------------------------------
+    def selectItemForMatplotlib(self, event = None):
+        self.selected = self.show_tree_history.focus()
+        self.values = self.show_tree_history.item(self.selected , "values")
+    def matplotPage(self,event=None):
+        self.ChartY=[]
+        self.ChartX=[]
+        self.con=sql.connect('mydb.db')
+        self.cur=self.con.cursor()
+        row1 = self.cur.execute('SELECT dateSefaresh FROM History WHERE codeKala = "{}"'.format(self.values[10]))
+        row1 =list(row1)
+        row2 = self.cur.execute('SELECT mojodi FROM History  WHERE codeKala = "{}" ORDER BY number'.format(self.values[10]))
+        row2 =list(row2)
+        # row2.sort()
+        print(row2)
+        # print(row)
+        for i in row1:
+                self.ChartY.append(i[0])
+        for i in row2 :
+                self.ChartX.append(i[0])
+        fig = plt.figure(figsize  = (6,6))
+        plt.plot(self.ChartY,self.ChartX , color = 'b' ,
             linewidth = 1 , 
-            linestyle = '--' , # '-' , '--' , '-.' , ':'
+            linestyle = '--' , 
             marker = 'o',
             markersize = 8 , 
             markerfacecolor = 'lightblue',
             markeredgecolor = 'brown',
-            markeredgewidth = 1  )
+            markeredgewidth = 1
+        )
+        plt.grid(which = 'both' ,color = 'grey' ,linestyle = '-.' ,linewidth = 0.5)
         plt.show()
+        self.frm  = LabelFrame(self , text = 'Plot' , padx = 5 , pady = 10)
+        self.frm.place(x = 50 , y = 0)
+        bar = FigureCanvasTkAgg(fig,self.frm)
+        bar.get_tk_widget().pack(side = LEFT , fill = BOTH)
+
 #--------------------------------------------------------------------
     def show_info_Karmand(self,event = None):
         codeMeliGet = self.e_search_codeMeli.get()
@@ -1309,6 +1531,7 @@ class app:
         self.lastNamelbl['text']= data[0][1]
         self.codeMelilbl['text']= data[0][2]
         self.genderlbl['text']= data[0][3]
+        
     def show_info_Kala(self,event = None):
         GetCodeKala = self.e_search_codeKala.get()
         con = sql.connect('mydb.db')
@@ -1321,17 +1544,31 @@ class app:
         self.groupKalalbl['text']=data[0][3]
         self.NoeKalalbl['text']=data[0][1]
         self.noqte = data[0][5]
+        
+        con = sql.connect('mydb.db')
+        cur = con.cursor()
+        cur.execute("SELECT photo FROM Kala WHERE code = '{}'".format(GetCodeKala))
+        self.image_data = cur.fetchone()[0]
+        self.product_img = Image.open(io.BytesIO(self.image_data))
+        self.product_photo = ImageTk.PhotoImage(self.product_img)
+        self.show_img_Vorodi = Label(sabtvorod , image=self.product_photo, width = 100 , height= 95)
+        self.show_img_Vorodi.place(x = 177, y = 199 )
 
     def update_record_number(self):
         GetCodeKala = self.e_search_codeKala.get()
         GetNumKala = self.e_Get_num.get()
         GetCodeSefaresh = self.e_Get_codeSefaresh.get()
         GetDateSefaresh = self.e_GetDate_sabtvorod.get()
-        con = sql.connect('mydb.db')
-        cur = con.cursor()
-        command = ' UPDATE Kala SET mojodi = "{}", CodeSefaresh = "{}", dateSefaresh = "{}"   WHERE code="{}" '.format(GetNumKala,GetCodeSefaresh,GetDateSefaresh,GetCodeKala)
-        cur.execute(command)
-        con.commit()
+        self.con = sql.connect('mydb.db')
+        self.cur = self.con.cursor()
+        update_mojodi = self.cur.execute('SELECT mojodi FROM Kala WHERE code ="{}"'.format(GetCodeKala))
+        update_mojodi = list(update_mojodi)
+        new_mojodi = int(update_mojodi[0][0]) + int(GetNumKala)
+
+        command = ' UPDATE Kala SET mojodi = "{}", CodeSefaresh = "{}", dateSefaresh = "{}"   WHERE code="{}" '.format(new_mojodi,GetCodeSefaresh,GetDateSefaresh,GetCodeKala)
+        self.cur.execute(command)
+        self.con.commit()
+        self.con.close()
         self.con = sql.connect('mydb.db')
         self.cur = self.con.cursor()
         row = self.cur.execute('''SELECT  * FROM Kala WHERE code = "{}"'''.format(GetCodeKala))
@@ -1350,6 +1587,35 @@ class app:
                                                                             str(self.count2+1)))
             self.lst_vorodi = []
             self.count2 += 1
+        # con.commit()
+        self.con.close()
+
+        self.statusVorodi = 'کالا وارد شد'
+        self.con=sql.connect('mydb.db')
+        self.cur=self.con.cursor()
+        mojodi = self.cur.execute('SELECT mojodi FROM Kala WHERE code="{}"'.format(GetCodeKala))
+        mojodi = list(mojodi)
+        print(mojodi)
+        command='''CREATE TABLE IF NOT EXISTS History (     namKala TEXT,
+                                                            typeKala TEXT ,
+                                                            codeKala TEXT ,
+                                                            goroKala TEXT,
+                                                            number TEXT,
+                                                            CodeSefaresh TEXT,
+                                                            dateSefaresh TEXT,
+                                                            namKarbar TEXT,
+                                                            lastKarbar TEXT,
+                                                            codeMeliKarbar TEXT,
+                                                            Gender TEXT,
+                                                            status TEXT,
+                                                            mojodi TEXT)'''
+        self.cur.execute(command)
+        data = (self.namKalalbl['text'],self.NoeKalalbl['text'],self.codeKalalbl['text']
+        ,self.groupKalalbl['text'],GetNumKala,GetCodeSefaresh, GetDateSefaresh, self.namlbl['text'],self.lastNamelbl['text'],self.codeMelilbl['text'],self.genderlbl['text'], self.statusVorodi, mojodi[0][0])
+        self.cur.execute('''INSERT INTO History (namKala,typeKala,codeKala,goroKala,number,CodeSefaresh,dateSefaresh, namKarbar,lastKarbar , codeMeliKarbar , Gender, status , mojodi) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)''',data)
+        self.con.commit()
+        self.con.close()
+
         self.namKalalbl['text']= ''
         self.codeKalalbl['text']= ''
         self.groupKalalbl['text']= ''
@@ -1396,7 +1662,16 @@ class app:
     
         self.selected = self.show_tree.focus()
         self.values = self.show_tree.item(self.selected , "values")
-        # print(self.values[2])
+
+        con = sql.connect('mydb.db')
+        cur = con.cursor()
+        cur.execute("SELECT photo FROM Kala WHERE code = '{}'".format(self.values[2]))
+        self.image_data = cur.fetchone()[0]
+        self.product_img = Image.open(io.BytesIO(self.image_data))
+        self.product_photo = ImageTk.PhotoImage(self.product_img)
+        self.show_image = Label(productpage , image=self.product_photo, width = 100 , height= 95)
+        self.show_image.place(x=125, y= 242)
+
         self.valuelst = self.sql_search(self.values[2])
         self.e_nam_kala.insert(0,self.valuelst[0][0])
         self.e_noe_kala.set(self.valuelst[0][1])
@@ -1404,8 +1679,6 @@ class app:
         self.e_group_kala.set(self.valuelst[0][3])
         self.e_noqte.insert(0,self.valuelst[0][5])
         self.e_tozihat.insert(0,self.valuelst[0][4])
-        # self.show_image['image'] = self.photo_read
-
     def edit(self,event = None):
         self.nam_kala = self.e_nam_kala.get()
         self.noe_kala = self.e_noe_kala.get()
@@ -1417,7 +1690,7 @@ class app:
         self.sql_update(self.values[2],self.nam_kala,self.noe_kala,self.code_kala,self.group_kala,self.tozihat,self.noqteKharid)
 
         self.show_tree.item(self.selected ,values = (self.noqteKharid,self.group_kala,self.code_kala,self.noe_kala,self.nam_kala,self.values[5]))
-
+        messagebox.showinfo('ویرایش' , 'مشخصات با موفقیت ویرایش شدند')
     def sql_update(self,id1,name1,noe_kala1,code1,group1,tozih1,noqte1):
         con = sql.connect('mydb.db')
         cur = con.cursor()
@@ -1441,7 +1714,7 @@ class app:
         cur.execute('''DELETE FROM Kala WHERE code ='''+ self.e_code_kala.get())
         con.commit()
         con.close()
-
+        self.show_image['image'] = img17
         for item in self.show_tree.get_children():
             self.show_tree.delete(item)
 
@@ -1454,6 +1727,7 @@ class app:
         self.e_noqte.delete(0, END)
         self.e_noe_kala.set('انتخاب کنید')
         self.e_group_kala.set('انتخاب کنید')
+        self.show_image['image'] = img17
         messagebox.showinfo('حذف آیتم', '!آیتم شما با موفقیت حذف شد')
 
     def Remove_all (self) :
@@ -1473,7 +1747,18 @@ class app:
         self.e_group_kala.set('انتخاب کنید')
 
     def data_to_list(self,event = None):
+        self.lst = []
         self.count = 0
+        for item in self.show_tree.get_children():
+            self.show_tree.delete(item)
+            print(item)
+        # self.e_nam_kala.delete(0,END)
+        # self.e_code_kala.delete(0,END)
+        # self.e_tozihat.delete(0,END)
+        # self.e_noqte.delete(0,END)
+        # self.e_search.delete(0,END)
+        # self.e_noe_kala.set("یک گزینه را انتخاب کنید")
+        # self.e_group_kala.set("یک گزینه را انتخاب کنید")
         self.con = sql.connect('mydb.db')
         self.cur = self.con.cursor()
         row = self.cur.execute('''SELECT  * FROM Kala''')
@@ -1528,7 +1813,9 @@ class app:
         self.con.commit()
         img17['file'] = 'pics/resid.png'
         self.e_nam_kala.focus()
-        
+        self.data_to_list()
+        messagebox.showinfo('اضافه شد' , 'کالا به لیست انبار اضافه شد')
+
     def search(self,event = None):
         self.con=sql.connect('mydb.db')
         self.cur=self.con.cursor()
@@ -1551,6 +1838,7 @@ class app:
             self.lst=[]
             self.show_tree.delete('0')
             self.data_to_list()
+            self.show_image['image'] = img17
 
 #-------------------------employee-Page-funcs--------------------
     def Addemp_to_sql(self):
@@ -1641,6 +1929,7 @@ class app:
         self.e_code_meli.delete(0, END)
         self.e_jensiat_combo.set('انتخاب کنید')
         self.e_position_combo.set('انتخاب کنید')
+        self.show_image_employee['image'] = img17
         messagebox.showinfo('حذف آیتم', '!آیتم شما با موفقیت حذف شد')
 
     def Remove_all_emp(self):
@@ -1657,6 +1946,7 @@ class app:
         self.e_code_meli.delete(0, END)
         self.e_jensiat_combo.set('انتخاب کنید')
         self.e_position_combo.set('انتخاب کنید')
+        self.show_image_employee['image'] = img17
         self.e_nam.focus()
     def edit_emp(self):
         self.nam = self.e_nam.get()
@@ -1668,6 +1958,8 @@ class app:
         self.sql_update_emp(self.values[2],self.nam,self.family,self.code_meli,self.jensiat,self.position)
 
         self.show_tree_employee.item(self.selected ,values = (self.position,self.jensiat,self.code_meli,self.family,self.nam,self.values[5]))
+        messagebox.showinfo('ویرایش' , 'مشخصات با موفقیت ویرایش شدند')
+
     def sql_update_emp(self,id1,name1,family1,code1,jensiat1,position1):
         con = sql.connect('mydb.db')
         cur = con.cursor()
@@ -1692,6 +1984,15 @@ class app:
         self.e_jensiat_combo.set(self.valuelst[0][3])
         self.e_position_combo.set(self.valuelst[0][4])
         # self.show_image_employee['image'] = self.photo_read_emp
+        con = sql.connect('mydb.db')
+        cur = con.cursor()
+        cur.execute("SELECT photo FROM SabtKarmand WHERE codeMeli = '{}'".format(self.values[2]))
+        self.image_data = cur.fetchone()[0]
+        self.product_img = Image.open(io.BytesIO(self.image_data))
+        self.product_photo = ImageTk.PhotoImage(self.product_img)
+        self.show_image_employee = Label(employeepage , image=self.product_photo, width = 100 , height= 95)
+        self.show_image_employee.place(x=139, y= 146)
+
 
     def data_to_list_emp(self,event = None):
         self.count_emp = 1
@@ -1714,14 +2015,6 @@ class app:
     def hoverBtn(self,img,url):
         img['file'] = url
 
-    def login(self, event = None):
-        pass
-
-    def register_sub(self, event = None):
-        pass
-    
-    def mainPage(self, event = None):
-        pass
 #------------------Global-funcs----------------------
     def select_image(self,event = None) :
         self.img_name = filedialog.askopenfilename()
@@ -1733,54 +2026,105 @@ class app:
         return blobdata
 
 #------------------nav-funcs----------------------
+    def historyPagePopUp(self,event = None):
+        if history.state != 'normal':
+            root.state('withdraw')
+            history.state('normal')
+            self.data_to_list_history()
     def exportProductPopUp(self,event = None):
         if sabtKhoroj.state != 'normal':
             root.state('withdraw')
             sabtKhoroj.state('normal')
+            self.data_to_list_export()
     def DarkhastKharid(self,event = None):
         if reqkalapage.state != ('normal') :
             root.state('withdraw')
             reqkalapage.state('normal')
+            self.data_to_req_table()
     def sabtvorodKala(self,event = None):
         if sabtvorod.state != ('normal') :
             root.state('withdraw')
             sabtvorod.state('normal')
+            self.update_record_number()
     def sabtKalaPage(self, event = None):
         if self.productpage.state != ('normal') :
             root.state('withdraw')
             self.productpage.state('normal')
+            self.data_to_list()
+
     def sabtKarmandPage(self):
         if self.employeepage.state != ('normal') :
             root.state('withdraw')
             self.employeepage.state('normal')
+            self.data_to_list_emp()
+
     def MojodiPage(self):
         if self.mojodipage.state != ('normal') :
             root.state('withdraw')
             self.mojodipage.state('normal')
+            self.data_to_stock()
 
     def darKhastKhoroj(self,event = None):
         if sefareshkala.state != ('normal') :
             root.state('withdraw')
             sefareshkala.state('normal')
+            self.data_to_Sefaresh()
     def BackMenu(self , event = None):
-        if root.state != 'normal':
+        if  root.state != 'normal':
             root.state('normal')
             productpage.state('withdraw')
+            self.e_noe_kala.set("یک گزینه را انتخاب کنید")
+            self.e_group_kala.set("یک گزینه را انتخاب کنید")
+            self.e_code_kala.delete(0,END)
+            self.e_nam_kala.delete(0,END)
+            self.e_noqte.delete(0,END)
+            self.e_tozihat.delete(0,END)
+            self.show_image['image'] = img17
         if  root.state != 'normal':
             root.state('normal')
             mojodipage.state('withdraw')
         if root.state != 'normal':
             root.state('normal')
             employeepage.state('withdraw')
+            self.e_nam.delete(0, END)
+            self.e_family.delete(0, END)
+            self.e_code_meli.delete(0, END)
+            self.e_jensiat_combo.set('انتخاب کنید')
+            self.e_position_combo.set('انتخاب کنید')
+            self.show_image_employee['image'] = img17
         if root.state != 'normal':
             root.state('normal')
             sabtvorod.state('withdraw')
-        
+            self.e_search_codeMeli.delete(0, END)
+            self.e_search_codeKala.delete(0, END)
+            self.e_Get_num.delete(0, END)
+            self.e_Get_codeSefaresh.delete(0, END)
+            self.namlbl['text']=  ''
+            self.lastNamelbl['text']=  ''
+            self.codeMelilbl['text']=  ''
+            self.genderlbl['text']=  ''
+            self.namKalalbl['text']=  ''
+            self.codeKalalbl['text']= ''
+            self.groupKalalbl['text']= ''
+            self.NoeKalalbl['text']= ''
+            self.noqte =  ''
+            self.show_img_Vorodi['image'] = img17
+            self.e_search_codeMeli.focus()
         if root.state != 'normal':
             root.state('normal')
             reqkalapage.state('withdraw')
-        
-        
+        if root.state != 'normal':
+            root.state('normal')
+            sefareshkala.state('withdraw')
+        if root.state != 'normal':
+            root.state('normal')
+            sabtKhoroj.state('withdraw')
+        if root.state != 'normal':
+            root.state('normal')
+            history.state('withdraw')
+        if root.state != 'normal':
+            root.state('normal')
+            Qabz.state('withdraw')
     def hide(self, event = None):
         if self.password_ent['show'] == '*':
             self.password_ent['show'] = ''
